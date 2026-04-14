@@ -5,7 +5,7 @@ import argparse
 input_dir = 'data/test_pdfs'
 output_dir = 'data'
 batch_id_file = 'data/batch_id.txt'
-batch_size = 10
+batch_size = 3
 
 token = os.getenv('MINERU_TOKEN')
 upload_url = 'https://mineru.net/api/v4/file-urls/batch'
@@ -58,13 +58,26 @@ header = {
 # else:
 #     print('No batch uploaded')
 
-
-
+batch_status = {}
 with open(batch_id_file, 'r') as f:
+    batch_ids = [line.strip() for line in f]
+
+time_interval = 3
+
+while True:
     for batch_id in f:
         url = f"https://mineru.net/api/v4/extract-results/batch/{batch_id}"
-        res = requests.get(url, headers=header)
-        print(res.status_code)
-        print(res.json())
-
+        response = requests.get(url, headers=header)
+        if response.status_code == 200:
+            result = response.json()
+            print(f'Response success: {result}')
+            if result['code'] == 0:
+                batch_id = result['data']['batch_id']
+                for res in result['data']['extract_result']:
+                    if res['state'] == 'done':
+                        pass
+                    elif res['state'] == 'failed':
+                        pass
+                    else:
+                        pass
 
