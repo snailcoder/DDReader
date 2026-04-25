@@ -1,0 +1,516 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "金融文档结构化输出Schema",
+  "description": "A股招股说明书、募集说明书等金融长文档的结构化输出Schema",
+  "type": "object",
+  "required": [
+    "document_id",
+    "document_type",
+    "issuer_profile",
+    "ownership_structure",
+    "financials",
+    "fund_raising_projects",
+    "risk_items",
+    "compliance_items",
+    "evidence_index"
+  ],
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "description": "文档唯一标识"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "招股说明书",
+        "募集说明书",
+        "上市公告书",
+        "补充披露文件"
+      ],
+      "description": "文档类型"
+    },
+    "issuer_profile": {
+      "type": "object",
+      "description": "发行人基础信息",
+      "properties": {
+        "issuer_name": {
+          "type": "string",
+          "description": "公司名称"
+        },
+        "issuer_name_normalized": {
+          "type": "string",
+          "description": "规范化公司名称"
+        },
+        "stock_code": {
+          "type": "string",
+          "description": "股票代码"
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "上交所",
+            "深交所",
+            "北交所"
+          ],
+          "description": "交易所"
+        },
+        "board": {
+          "type": "string",
+          "enum": [
+            "主板",
+            "创业板",
+            "科创板",
+            "北交所"
+          ],
+          "description": "上市板块"
+        },
+        "legal_representative": {
+          "type": "string",
+          "description": "法定代表人"
+        },
+        "establishment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "成立日期，格式YYYY-MM-DD"
+        },
+        "registered_capital": {
+          "type": "object",
+          "description": "注册资本",
+          "properties": {
+            "value": {
+              "type": "number"
+            },
+            "unit": {
+              "type": "string",
+              "enum": [
+                "万元",
+                "元"
+              ],
+              "default": "万元"
+            },
+            "currency": {
+              "type": "string",
+              "enum": [
+                "CNY",
+                "USD",
+                "HKD"
+              ],
+              "default": "CNY"
+            }
+          }
+        },
+        "registered_address": {
+          "type": "string",
+          "description": "注册地址"
+        },
+        "industry": {
+          "type": "string",
+          "description": "所属行业"
+        },
+        "main_business": {
+          "type": "string",
+          "description": "主营业务"
+        },
+        "source_evidence_id": {
+          "type": "string",
+          "description": "证据索引ID"
+        }
+      }
+    },
+    "ownership_structure": {
+      "type": "object",
+      "description": "股权与控制关系",
+      "properties": {
+        "controlling_shareholder": {
+          "type": "array",
+          "description": "控股股东",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "股东名称"
+              },
+              "shareholding_ratio": {
+                "type": "number",
+                "description": "持股比例"
+              },
+              "direct_or_indirect": {
+                "type": "string",
+                "enum": [
+                  "直接",
+                  "间接"
+                ],
+                "description": "直接持股或间接持股"
+              },
+              "source_evidence_id": {
+                "type": "string",
+                "description": "证据索引ID"
+              }
+            }
+          }
+        },
+        "actual_controller": {
+          "type": "array",
+          "description": "实际控制人",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "实际控制人名称"
+              },
+              "control_type": {
+                "type": "string",
+                "enum": [
+                  "一致行动协议",
+                  "表决权委托",
+                  "控股",
+                  "其他"
+                ],
+                "description": "控制类型"
+              },
+              "source_evidence_id": {
+                "type": "string",
+                "description": "证据索引ID"
+              }
+            }
+          }
+        },
+        "concerted_action_flag": {
+          "type": "boolean",
+          "description": "是否存在一致行动关系",
+          "default": false
+        },
+        "top_shareholders": {
+          "type": "array",
+          "description": "前十大股东",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "股东名称"
+              },
+              "shareholding_ratio": {
+                "type": "number",
+                "description": "持股比例"
+              },
+              "rank": {
+                "type": "integer",
+                "description": "排名"
+              },
+              "source_evidence_id": {
+                "type": "string",
+                "description": "证据索引ID"
+              }
+            }
+          }
+        }
+      }
+    },
+    "financials": {
+      "type": "array",
+      "description": "财务指标列表",
+      "items": {
+        "type": "object",
+        "required": [
+          "field_name",
+          "field_scope",
+          "period",
+          "value"
+        ],
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "description": "字段名称"
+          },
+          "field_scope": {
+            "type": "string",
+            "description": "字段口径/来源章节，如合并利润表、研发投入指标、募投项目预算等"
+          },
+          "period": {
+            "type": "string",
+            "format": "date",
+            "description": "统计期间，格式YYYY-MM-DD"
+          },
+          "value": {
+            "type": "number",
+            "description": "数值"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "万元",
+              "元",
+              "%"
+            ],
+            "default": "万元",
+            "description": "单位"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY",
+              "USD",
+              "HKD"
+            ],
+            "default": "CNY",
+            "description": "币种"
+          },
+          "chapter": {
+            "type": "string",
+            "description": "来源章节"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "description": "证据索引ID"
+          }
+        }
+      }
+    },
+    "fund_raising_projects": {
+      "type": "array",
+      "description": "募投项目列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "project_name": {
+            "type": "string",
+            "description": "项目名称"
+          },
+          "project_type": {
+            "type": "string",
+            "enum": [
+              "扩产",
+              "研发",
+              "补充流动资金",
+              "偿还银行贷款",
+              "其他"
+            ],
+            "description": "项目类型"
+          },
+          "total_investment": {
+            "type": "object",
+            "description": "项目总投资",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "万元",
+                  "元"
+                ],
+                "default": "万元"
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "CNY",
+                  "USD",
+                  "HKD"
+                ],
+                "default": "CNY"
+              }
+            }
+          },
+          "planned_use_of_raised_funds": {
+            "type": "object",
+            "description": "拟使用募集资金",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "万元",
+                  "元"
+                ],
+                "default": "万元"
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "CNY",
+                  "USD",
+                  "HKD"
+                ],
+                "default": "CNY"
+              }
+            }
+          },
+          "construction_period": {
+            "type": "string",
+            "description": "建设周期"
+          },
+          "implementation_entity": {
+            "type": "string",
+            "description": "实施主体"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "description": "证据索引ID"
+          }
+        }
+      }
+    },
+    "risk_items": {
+      "type": "array",
+      "description": "风险事项列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "risk_title": {
+            "type": "string",
+            "description": "风险因素标题"
+          },
+          "risk_category": {
+            "type": "string",
+            "enum": [
+              "财务风险",
+              "经营风险",
+              "法律风险",
+              "行业风险",
+              "技术风险",
+              "政策风险",
+              "其他"
+            ],
+            "description": "风险类别"
+          },
+          "risk_description": {
+            "type": "string",
+            "description": "风险描述"
+          },
+          "severity_level": {
+            "type": "string",
+            "enum": [
+              "高",
+              "中",
+              "低"
+            ],
+            "description": "严重程度"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "description": "证据索引ID"
+          }
+        }
+      }
+    },
+    "compliance_items": {
+      "type": "array",
+      "description": "合规事项列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_type": {
+            "type": "string",
+            "enum": [
+              "行政处罚",
+              "诉讼仲裁",
+              "关联交易",
+              "对外担保",
+              "重大诉讼",
+              "其他"
+            ],
+            "description": "事项类型"
+          },
+          "counter_party": {
+            "type": "string",
+            "description": "交易对手方"
+          },
+          "occurrence_date": {
+            "type": "string",
+            "format": "date",
+            "description": "发生日期"
+          },
+          "amount": {
+            "type": "object",
+            "description": "金额",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "万元",
+                  "元"
+                ],
+                "default": "万元"
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "CNY",
+                  "USD",
+                  "HKD"
+                ],
+                "default": "CNY"
+              }
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "描述"
+          },
+          "period": {
+            "type": "string",
+            "format": "date",
+            "description": "关联期间"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "description": "证据索引ID"
+          }
+        }
+      }
+    },
+    "evidence_index": {
+      "type": "array",
+      "description": "证据索引列表",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "description": "证据ID"
+          },
+          "page_no": {
+            "type": "integer",
+            "description": "页码"
+          },
+          "chapter": {
+            "type": "string",
+            "description": "章节名称"
+          },
+          "block_type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "table",
+              "footnote",
+              "header",
+              "footer"
+            ],
+            "description": "内容块类型"
+          },
+          "quote": {
+            "type": "string",
+            "description": "原文引用"
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "边界框坐标 [x1, y1, x2, y2]"
+          }
+        }
+      }
+    }
+  }
+}
