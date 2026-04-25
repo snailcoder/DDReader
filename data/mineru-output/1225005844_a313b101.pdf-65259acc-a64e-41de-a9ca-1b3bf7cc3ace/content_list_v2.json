@@ -1,0 +1,544 @@
+[
+    [
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "广州广合科技股份有限公司"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                394,
+                143,
+                640,
+                162
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "关于刊发 H股招股说明书、H 股发行价格上限 "
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                315,
+                168,
+                719,
+                187
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "及H 股香港公开发售等事宜的公告"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                344,
+                196,
+                652,
+                212
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "本公司及董事会全体成员保证信息披露的内容真实、准确、完整，没有虚假记载、误导性陈述或重大遗漏。"
+                    }
+                ]
+            },
+            "bbox": [
+                152,
+                247,
+                843,
+                293
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "广州广合科技股份有限公司（以下简称“公司”）正在进行申请发行境外上市外资股（H 股）并在香港联合交易所有限公司（以下简称“香港联交所”）主板挂牌上市（以下简称“本次发行上市”）的相关工作。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                326,
+                850,
+                401
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2025 年6月11 日，公司向香港联交所递交了本次发行上市的申请，并于同日在香港联交所网站刊登了本次发行上市的申请资料。根据本次发行上市的时间安排及香港联交所的相关规定，公司已于 2025 年 12 月14 日向香港联交所更新递交了本次发行上市的申请，并于同日在香港联交所网站刊登了本次发行上市的更新申请资料。具体内容详见公司分别于 2025 年 6 月 12 日、2025 年 12 月 15日在《证券时报》《中国证券报》《上海证券报》《证券日报》《经济参考网》和巨潮资讯网（http://www.cninfo.com.cn）披露的《关于向香港联交所递交 H 股发行与上市的申请并刊发申请资料的公告》（公告编号：2025-036）、《关于申请发行境外上市股份（H 股）并上市的进展公告》（公告编号：2025-081）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                410,
+                853,
+                650
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年1月23日，公司收到中国证券监督管理委员会（以下简称“中国证监会”）出具的《关于广州广合科技股份有限公司境外发行上市备案通知书》（国合函〔2026〕161 号），中国证监会对公司本次发行上市备案予以确认。具体内容详见公司于2026 年1月24日在《证券时报》《中国证券报》《上海证券报》《证券日报》《经济参考网》和巨潮资讯网（http://www.cninfo.com.cn）披露的《关于发行境外上市股份（H 股）获得中国证监会备案的公告》（公告编号：2026-003）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                659,
+                850,
+                816
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年1月29日，香港联交所上市委员会举行上市聆讯，审议了公司本次发行上市的申请。具体内容详见公司于 2026 年1 月31 日在《证券时报》《中国证券报》《上海证券报》《证券日报》《经济参考网》和巨潮资讯网"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                826,
+                850,
+                898
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券代码：001389"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                92,
+                312,
+                108
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券简称：广合科技"
+                    }
+                ]
+            },
+            "bbox": [
+                389,
+                92,
+                574,
+                107
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "公告编号：2026-014"
+                    }
+                ]
+            },
+            "bbox": [
+                663,
+                92,
+                847,
+                107
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": []
+            },
+            "bbox": [
+                485,
+                913,
+                510,
+                925
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（http://www.cninfo.com.cn）披露的《关于香港联交所审议公司发行境外上市外资股（H 股）的公告》（公告编号：2026-006）。"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                85,
+                850,
+                131
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年2月27日，公司在香港联交所网站刊登了本次发行上市聆讯后资料集。具体内容详见公司于 2026 年3 月2日在《证券时报》《中国证券报》《上海证券报》《证券日报》《经济参考网》和巨潮资讯网（http://www.cninfo.com.cn）披露的《关于刊发境外上市外资股（H 股）发行聆讯后资料集的公告》（公告编号：2026-013）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                140,
+                853,
+                269
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年3月12 日，公司按照有关规定在香港联交所网站刊登本次发行上市H 股招股说明书，该 H 股招股说明书为根据适用的香港法律法规和香港联交所、香港证券及期货事务监察委员会的相关规范及要求而刊发，其包含的部分内容可能与公司先前根据中国法律法规准备或者刊发的相关文件存在一定的差异，包括但不限于该招股说明书中包含的根据国际会计准则编制的会计师报告，刊发目的仅为提供资讯予香港公众人士和合资格的投资者，境内投资者应当参阅公司在境内的报纸及监管机构指定的信息披露网站的相关信息和公告。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                279,
+                853,
+                464
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "鉴于本次发行上市 H 股招股说明书的刊发目的仅为提供信息予香港公众人士和合资格的投资者，公司将不会在境内证券交易所的网站和符合监管机构规定条件的媒体上刊登该 H 股招股说明书，但为使境内投资者及时了解该 H 股招股说明书披露的本次发行上市及公司的其他相关信息，现提供该 H 股招股说明书在香港联交所网站的查询链接供查阅："
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                473,
+                853,
+                602
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "中文："
+                    }
+                ]
+            },
+            "bbox": [
+                186,
+                612,
+                240,
+                629
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0312/20260 31200004_c.pdf "
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                640,
+                848,
+                686
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "英文："
+                    }
+                ]
+            },
+            "bbox": [
+                186,
+                695,
+                240,
+                711
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0312/20260 31200003.pdf "
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                722,
+                845,
+                770
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "需要特别予以说明的是，本公告仅为境内投资者及时了解公司本次发行上市的相关信息而作出。本公告以及公司刊登于香港联交所网站的 H 股招股说明书均不构成也不得视作对任何个人或实体收购、购买或认购公司任何证券的要约或要约邀请。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                778,
+                852,
+                879
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次全球发售 H股基础发行股数为 46,000,000 股，其中，初步安排香"
+                    }
+                ]
+            },
+            "bbox": [
+                186,
+                889,
+                850,
+                906
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": []
+            },
+            "bbox": [
+                485,
+                913,
+                510,
+                925
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "港公开发售4,600,000 股（可予重新分配），约占全球发售总数的 "
+                    },
+                    {
+                        "type": "equation_inline",
+                        "content": "1 0 . 0 0 \\%"
+                    },
+                    {
+                        "type": "text",
+                        "content": "；国际发售 41,400,000 股（可予重新分配），约占全球发售总数的 "
+                    },
+                    {
+                        "type": "equation_inline",
+                        "content": "9 0 . 0 0 \\%"
+                    },
+                    {
+                        "type": "text",
+                        "content": "。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                85,
+                850,
+                131
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次H股发行的价格最高不超过每股71.88 港元，公司H股香港公开发售于2026 年3月12 日开始，预计于2026 年3月17 日结束，并预计于2026 年3 月 19 日前（含当日）公布发行价格，相关情况将刊登于香港联交所网站（www.hkexnews.hk）和公司网站（www.delton.com.cn）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                140,
+                853,
+                242
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次发行的H股预计于2026年3月20日在香港联交所挂牌并开始上市交易。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                250,
+                850,
+                297
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "特此公告。"
+                    }
+                ]
+            },
+            "bbox": [
+                184,
+                335,
+                282,
+                351
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "广州广合科技股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                601,
+                417,
+                850,
+                435
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "董事会"
+                    }
+                ]
+            },
+            "bbox": [
+                784,
+                445,
+                848,
+                462
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年 3 月 12 日"
+                    }
+                ]
+            },
+            "bbox": [
+                687,
+                478,
+                847,
+                495
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "3/3 "
+                    }
+                ]
+            },
+            "bbox": [
+                485,
+                913,
+                512,
+                925
+            ]
+        }
+    ]
+]

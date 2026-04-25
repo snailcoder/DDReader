@@ -1,0 +1,656 @@
+[
+    [
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "无锡先导智能装备股份有限公司"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                305,
+                91,
+                687,
+                112
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "关于刊发 H 股招股说明书、H 股发行价格上限及 "
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                208,
+                128,
+                786,
+                151
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "H股香港公开发售等事宜的公告"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                307,
+                166,
+                687,
+                187
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "本公司及董事会全体成员保证信息披露的内容真实、准确、完整，没有虚假记载、误导性陈述或者重大遗漏。"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                228,
+                847,
+                273
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "无锡先导智能装备股份有限公司（以下简称“公司”）正在进行申请发行境外上市股份（H股）并在香港联合交易所有限公司（以下简称“香港联交所”）主板挂牌上市（以下简称“本次发行上市”）的相关工作。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                312,
+                847,
+                382
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2025年2月25日，公司向香港联交所递交了本次发行上市的申请，并于同日在香港联交所网站刊登了本次发行上市的申请资料。按照本次发行上市的时间安排并根据香港联交所的相关规定，公司于2025年8月26日更新递交了本次发行上市的申请，并于同日在香港联交所网站刊登了申请资料。具体内容详见公司分别于 2025 年 2 月 26 日、2025 年 8 月 27 日在巨潮资讯网（www.cninfo.com.cn）及指定媒体披露的《关于向香港联交所递交 H 股发行并上市申请并刊发申请资料的公告》（公告编号：2025-013）、《关于发行H股并上市的进展公告》（公告编号：2025-039）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                404,
+                848,
+                615
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年 1 月 4 日，公司收到中国证券监督管理委员会（以下简称“中国证监会”）出具的《关于无锡先导智能装备股份有限公司境外发行上市备案通知书》（国合函〔2026〕9号），中国证监会对公司本次发行上市备案信息予以确认。具体内容详见公司于 2026 年 1 月 5 日在巨潮资讯网（www.cninfo.com.cn）及指定媒体披露的《关于发行境外上市股份（H股）获得中国证监会备案的公告》（公告编号：2026-001）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                636,
+                848,
+                791
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年1月22日，香港联交所上市委员会举行上市聆讯，审议了公司本次发行上市的申请。具体内容详见公司于 2026 年 1 月 24 日在巨潮资讯网"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                812,
+                847,
+                857
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券代码：300450"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                49,
+                285,
+                61
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券简称：先导智能"
+                    }
+                ]
+            },
+            "bbox": [
+                426,
+                49,
+                581,
+                63
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "公告编号：2026-009"
+                    }
+                ]
+            },
+            "bbox": [
+                695,
+                49,
+                848,
+                63
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "- 1 - "
+                    }
+                ]
+            },
+            "bbox": [
+                484,
+                928,
+                512,
+                938
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（www.cninfo.com.cn）及指定媒体披露的《关于香港联交所审议公司发行 H 股的公告》（公告编号：2026-002）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                90,
+                847,
+                134
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年1月25日，公司在香港联交所网站刊登了本次发行聆讯后资料集。具体内容详见公司于 2026 年 1 月 27 日在巨潮资讯网（www.cninfo.com.cn）及指定媒体披露的《关于刊发H股发行聆讯后资料集的公告》（公告编号：2026-008）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                154,
+                853,
+                227
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年2月3日，公司按照有关规定在香港联交所网站刊登本次发行上市H股招股说明书，该 H 股招股说明书为根据适用的香港法律法规和香港联交所、香港证券及期货事务监察委员会的相关规范及要求而刊发，其包含的部分内容可能与公司先前根据中国法律法规准备或者刊发的相关文件存在一定的差异，包括但不限于该招股说明书中包含的根据国际会计准则编制的会计师报告。刊发上述H 股招股说明书的目的仅为提供资讯予香港公众人士和合资格的投资者，境内投资者应当参阅公司在境内的报纸及监管机构指定的信息披露网站的相关信息和公告。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                247,
+                848,
+                458
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "鉴于本次发行上市 H 股招股说明书的刊发目的仅为提供信息予香港公众人士和合资格的投资者，公司将不会在境内证券交易所的网站和符合监管机构规定条件的媒体上刊登该 H 股招股说明书，但为使境内投资者及时了解该 H 股招股说明书披露的本次发行上市及公司的其他相关信息，现提供该 H 股招股说明书在香港联交所网站的查询链接："
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                479,
+                847,
+                606
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "中文："
+                    }
+                ]
+            },
+            "bbox": [
+                186,
+                627,
+                238,
+                642
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0203/2026020300010 _c.pdf "
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                665,
+                840,
+                709
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "英文："
+                    }
+                ]
+            },
+            "bbox": [
+                186,
+                730,
+                238,
+                744
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0203/2026020300009. pdf "
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                766,
+                847,
+                810
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "需要特别予以说明的是，本公告仅为境内投资者及时了解公司本次发行上市的相关信息而作出。本公告以及公司刊登于香港联交所网站的 H 股招股说明书"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                831,
+                847,
+                875
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券代码：300450"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                49,
+                285,
+                61
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券简称：先导智能"
+                    }
+                ]
+            },
+            "bbox": [
+                426,
+                49,
+                581,
+                63
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "公告编号：2026-009"
+                    }
+                ]
+            },
+            "bbox": [
+                695,
+                49,
+                848,
+                63
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "- 2 - "
+                    }
+                ]
+            },
+            "bbox": [
+                484,
+                928,
+                512,
+                939
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "均不构成也不得视作对任何个人或实体收购、购买或认购公司任何证券的要约或要约邀请。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                90,
+                847,
+                134
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次全球发售 H 股基础发行股数为 93,616,000 股（视乎超额配售权行使与否而定），其中，初步安排香港公开发售 9,361,600 股（可予重新分配），约占全球发售总数的 "
+                    },
+                    {
+                        "type": "equation_inline",
+                        "content": "10 \\%"
+                    },
+                    {
+                        "type": "text",
+                        "content": "；国际发售84,254,400股（可予重新分配及视乎超额配售权行使与否而定），约占全球发售总数的 "
+                    },
+                    {
+                        "type": "equation_inline",
+                        "content": "90 \\%"
+                    },
+                    {
+                        "type": "text",
+                        "content": "。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                154,
+                847,
+                254
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "自上市日期起至香港公开发售截止日后起30日内，保荐人兼整体协调人（为其本身及代表国际承销商）还可以通过行使超额配售权，要求公司按发售价额外增发最多不超过 14,042,400 股 H 股。在超额配售权悉数行使的情况下，公司本次全球发售H 股的最大发行股数为 107,658,400股。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                275,
+                847,
+                375
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次 H 股发行的价格最高不超过每股 45.80 港元，公司 H 股香港公开发售于2026年2月3日开始，预计于2026年2月6日结束，并预计于2026年2 月 9 日前（含当日）公布发行价格，相关情况将刊登于香港联交所网站（www.hkexnews.hk）和公司网站（www.leadintelligent.com）。"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                395,
+                847,
+                495
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "公司本次发行的 H 股预计于 2026 年 2 月 11 日在香港联交所挂牌并开始上市交易。"
+                    }
+                ]
+            },
+            "bbox": [
+                146,
+                514,
+                847,
+                558
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "特此公告。"
+                    }
+                ]
+            },
+            "bbox": [
+                184,
+                581,
+                278,
+                596
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "无锡先导智能装备股份有限公司董事会"
+                    }
+                ]
+            },
+            "bbox": [
+                500,
+                618,
+                847,
+                633
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026 年 2 月 3 日"
+                    }
+                ]
+            },
+            "bbox": [
+                697,
+                655,
+                845,
+                670
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券代码：300450"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                49,
+                285,
+                61
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "证券简称：先导智能"
+                    }
+                ]
+            },
+            "bbox": [
+                426,
+                49,
+                581,
+                63
+            ]
+        },
+        {
+            "type": "page_header",
+            "content": {
+                "page_header_content": [
+                    {
+                        "type": "text",
+                        "content": "公告编号：2026-009"
+                    }
+                ]
+            },
+            "bbox": [
+                695,
+                49,
+                848,
+                63
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "- 3 - "
+                    }
+                ]
+            },
+            "bbox": [
+                484,
+                928,
+                512,
+                938
+            ]
+        }
+    ]
+]
