@@ -86,7 +86,7 @@ class LLMExtractor:
         all_results = []
 
         for chunk in chunks:
-            prompt = prompt_template.format(chapter_text=chunk)
+            prompt = prompt_template.replace("{chapter_text}", chunk)
             try:
                 result = self.client.chat_json(prompt, system_prompt=config.SYSTEM_PROMPT)
             except Exception as e:

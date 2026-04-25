@@ -1,11 +1,24 @@
 """全局配置：API 参数、模型设置、Prompt 模板、字段 Schema 定义"""
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# 自动加载项目根目录下的 .env 文件
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=_env_path, override=True)
 
 # ==================== InternLM API 配置 ====================
-API_BASE = "https://internlm.intern-ai.org.cn/api/v1"
+# 参考用户实测可用的端点:
+# curl --location 'https://chat.intern-ai.org.cn/api/v1/chat/completions' \
+#   --header 'Authorization: Bearer <token>' \
+#   --header 'Content-Type: application/json' \
+#   --data '{"model": "intern-latest", "messages": [...]}'
+API_BASE = "https://chat.intern-ai.org.cn/api/v1"
 API_KEY = os.getenv("INTERNLM_API_KEY", "")
-MODEL_NAME = "internlm2.5-latest"
+MODEL_NAME = "intern-latest"
 MAX_TOKENS = 8192
 TEMPERATURE = 0.1
 REQUEST_TIMEOUT = 120
