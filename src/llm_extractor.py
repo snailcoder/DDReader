@@ -83,31 +83,41 @@ class LLMExtractor:
 
         # 如果文本太长，切分后分别抽取再合并（对列表型字段）
         chunks = utils.chunk_text(text, max_chars=6000)
+        print(f"[LLM] 开始抽取: {field_category} | 文本长度: {len(text)} 字符 | chunk 数: {len(chunks)}")
+
         all_results = []
 
-        for chunk in chunks:
+        for idx, chunk in enumerate(chunks):
+            print(f"[LLM]   -> 调用 {field_category} chunk {idx + 1}/{len(chunks)} | {len(chunk)} 字符")
             prompt = prompt_template.replace("{chapter_text}", chunk)
             try:
                 result = self.client.chat_json(prompt, system_prompt=config.SYSTEM_PROMPT)
             except Exception as e:
-                print(f"[警告] {field_category} 抽取失败: {e}")
+                print(f"[LLM]   <- {field_category} chunk {idx + 1} 失败: {e}")
                 continue
 
             if result is None:
+                print(f"[LLM]   <- {field_category} chunk {idx + 1} 返回空")
                 continue
 
             # 统一处理返回格式
             if isinstance(result, list):
                 all_results.extend(result)
+                print(f"[LLM]   <- {field_category} chunk {idx + 1} 完成 | 返回列表 {len(result)} 条")
             elif isinstance(result, dict):
                 all_results.append(result)
+                print(f"[LLM]   <- {field_category} chunk {idx + 1} 完成 | 返回 dict")
+            else:
+                print(f"[LLM]   <- {field_category} chunk {idx + 1} 完成 | 返回类型: {type(result).__name__}")
 
         # 去重和合并
         if field_category in {"issuer_profile", "ownership_structure"}:
             # 对象型：取最后一个非空结果
             for r in reversed(all_results):
                 if r and isinstance(r, dict) and any(v not in (None, "", [], {}) for v in r.values()):
+                    print(f"[LLM] {field_category} 抽取完成 | 合并后 1 个对象")
                     return r
+            print(f"[LLM] {field_category} 抽取完成 | 无有效结果")
             return None
 
         # 列表型：去重（简单按字符串化去重）
@@ -120,4 +130,5 @@ class LLMExtractor:
             if key not in seen:
                 seen.add(key)
                 deduped.append(item)
+        print(f"[LLM] {field_category} 抽取完成 | 合并去重后 {len(deduped)} 条")
         return deduped

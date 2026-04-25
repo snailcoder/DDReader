@@ -30,8 +30,11 @@ class LLMClient:
         messages.append({"role": "user", "content": user_prompt})
 
         temp = temperature if temperature is not None else config.TEMPERATURE
+        user_content_preview = user_prompt[:60].replace("\n", " ")
 
         for attempt in range(max_retries):
+            print(f"[API] 请求 -> model={self.model} | attempt={attempt + 1}/{max_retries} | prompt预览='{user_content_preview}...' | 等待响应...")
+            start = time.time()
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -40,10 +43,22 @@ class LLMClient:
                     max_tokens=config.MAX_TOKENS,
                     timeout=config.REQUEST_TIMEOUT,
                 )
-                return response.choices[0].message.content or ""
+                elapsed = time.time() - start
+                usage = response.usage
+                content = response.choices[0].message.content or ""
+                print(
+                    f"[API] 响应 <- 耗时: {elapsed:.2f}s | "
+                    f"prompt_tokens={usage.prompt_tokens if usage else 'N/A'} | "
+                    f"completion_tokens={usage.completion_tokens if usage else 'N/A'} | "
+                    f"content_len={len(content)}"
+                )
+                return content
             except Exception as e:
+                elapsed = time.time() - start
+                print(f"[API] 响应失败 耗时: {elapsed:.2f}s | error={e}")
                 if attempt < max_retries - 1:
                     wait = 2 ** attempt
+                    print(f"[API] 将在 {wait}s 后重试...")
                     time.sleep(wait)
                     continue
                 raise RuntimeError(f"LLM API 调用失败（重试{max_retries}次）: {e}") from e

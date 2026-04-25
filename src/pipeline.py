@@ -91,6 +91,21 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
     extractor = llm_extractor or LLMExtractor()
     extracted = extractor.extract_all(chapter_texts)
 
+    # 7.5 打印抽取结果摘要
+    issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
+    financials_count = len(extracted.get("financials", []) or [])
+    projects_count = len(extracted.get("fund_raising_projects", []) or [])
+    risks_count = len(extracted.get("risk_items", []) or [])
+    compliance_count = len(extracted.get("compliance_items", []) or [])
+    print(
+        f"[Pipeline] 抽取结果摘要: "
+        f"issuer={issuer_name or 'N/A'} | "
+        f"财务指标={financials_count}条 | "
+        f"募投项目={projects_count}条 | "
+        f"风险事项={risks_count}条 | "
+        f"合规事项={compliance_count}条"
+    )
+
     # 8. 后处理
     print("[Pipeline] 后处理抽取结果...")
     result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
