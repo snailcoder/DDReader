@@ -1,14 +1,14 @@
 """手动运行入口脚本"""
 
 import argparse
+import asyncio
 import sys
 from pathlib import Path
 
-# 将项目根目录加入路径，以便导入 src 模块
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.pipeline import run_pipeline
+from src.pipeline import run_pipeline, run_pipeline_async
 
 
 def main():
@@ -31,15 +31,24 @@ def main():
         default=None,
         help="InternLM API Key（默认读取环境变量 INTERNLM_API_KEY）",
     )
+    parser.add_argument(
+        "--async_mode",
+        action="store_true",
+        default=True,
+        help="使用异步并发模式（大幅提升请求效率）",
+    )
 
     args = parser.parse_args()
 
-    # 如果命令行传入了 api_key，临时设置环境变量
     if args.api_key:
         import os
         os.environ["INTERNLM_API_KEY"] = args.api_key
 
-    result = run_pipeline(args.input_dir, args.output_dir)
+    if args.async_mode:
+        result = asyncio.run(run_pipeline_async(args.input_dir, args.output_dir))
+    else:
+        result = run_pipeline(args.input_dir, args.output_dir)
+
     print(f"\n处理完成，document_id={result['document_id']}, document_type={result['document_type']}")
 
 

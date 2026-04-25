@@ -1,10 +1,12 @@
 """InternLM API 客户端封装（OpenAI SDK 兼容）"""
 
+import asyncio
 import json
+import re
 import time
 from typing import Any, Dict, List, Optional
 
-from openai import OpenAI
+from openai import AsyncOpenAI, OpenAI
 
 from . import config
 
@@ -30,11 +32,8 @@ class LLMClient:
         messages.append({"role": "user", "content": user_prompt})
 
         temp = temperature if temperature is not None else config.TEMPERATURE
-        user_content_preview = user_prompt[:60].replace("\n", " ")
 
         for attempt in range(max_retries):
-            print(f"[API] 请求 -> model={self.model} | attempt={attempt + 1}/{max_retries} | prompt预览='{user_content_preview}...' | 等待响应...")
-            start = time.time()
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -43,22 +42,10 @@ class LLMClient:
                     max_tokens=config.MAX_TOKENS,
                     timeout=config.REQUEST_TIMEOUT,
                 )
-                elapsed = time.time() - start
-                usage = response.usage
-                content = response.choices[0].message.content or ""
-                print(
-                    f"[API] 响应 <- 耗时: {elapsed:.2f}s | "
-                    f"prompt_tokens={usage.prompt_tokens if usage else 'N/A'} | "
-                    f"completion_tokens={usage.completion_tokens if usage else 'N/A'} | "
-                    f"content_len={len(content)}"
-                )
-                return content
+                return response.choices[0].message.content or ""
             except Exception as e:
-                elapsed = time.time() - start
-                print(f"[API] 响应失败 耗时: {elapsed:.2f}s | error={e}")
                 if attempt < max_retries - 1:
                     wait = 2 ** attempt
-                    print(f"[API] 将在 {wait}s 后重试...")
                     time.sleep(wait)
                     continue
                 raise RuntimeError(f"LLM API 调用失败（重试{max_retries}次）: {e}") from e
@@ -101,3 +88,79 @@ def _fix_json(text: str) -> str:
 
 
 import re  # noqa: E402
+
+
+class AsyncLLMClient:
+    """异步 InternLM API 客户端，支持并发请求和限流"""
+
+    def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None, model: Optional[str] = None):
+        self.api_key = api_key or config.API_KEY
+        self.base_url = base_url or config.API_BASE
+        self.model = model or config.MODEL_NAME
+
+        if not self.api_key:
+            raise ValueError("API Key 未设置，请配置环境变量 INTERNLM_API_KEY")
+
+        self.client = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
+        self._semaphore = asyncio.Semaphore(30)
+        self._lock = asyncio.Lock()
+        self._last_request_time = 0.0
+        self._min_interval = 2.0
+
+    async def _rate_limit_wait(self):
+        async with self._lock:
+            now = time.time()
+            elapsed = now - self._last_request_time
+            if elapsed < self._min_interval:
+                await asyncio.sleep(self._min_interval - elapsed)
+            self._last_request_time = time.time()
+
+    async def chat_json_async(self, user_prompt: str, system_prompt: Optional[str] = None, temperature: Optional[float] = None, max_retries: int = 3) -> Any:
+        async with self._semaphore:
+            await self._rate_limit_wait()
+            return await self._chat_with_retry(user_prompt, system_prompt, temperature, max_retries)
+
+    async def _chat_with_retry(self, user_prompt: str, system_prompt: Optional[str], temperature: Optional[float], max_retries: int) -> Any:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": user_prompt})
+
+        temp = temperature if temperature is not None else config.TEMPERATURE
+
+        for attempt in range(max_retries):
+            try:
+                response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=temp,
+                    max_tokens=config.MAX_TOKENS,
+                    timeout=config.REQUEST_TIMEOUT,
+                )
+                raw = response.choices[0].message.content or ""
+                return self._parse_json_response(raw)
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait = 2 ** attempt
+                    await asyncio.sleep(wait)
+                    continue
+                raise RuntimeError(f"LLM API 调用失败（重试{max_retries}次）: {e}") from e
+
+    def _parse_json_response(self, raw: str) -> Any:
+        raw = raw.strip()
+        if raw.startswith("```"):
+            lines = raw.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw = "\n".join(lines).strip()
+
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as e:
+            try:
+                fixed = _fix_json(raw)
+                return json.loads(fixed)
+            except Exception:
+                raise RuntimeError(f"LLM 返回无法解析为 JSON: {e}\n原始文本前500字: {raw[:500]}") from e

@@ -1,5 +1,6 @@
 """主 Pipeline：串联全部步骤，生成最终 JSON"""
 
+import asyncio
 import json
 import os
 from pathlib import Path
@@ -144,3 +145,96 @@ def _save_result(result: Dict[str, Any], output_dir: str, doc_id: str) -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
     print(f"[Pipeline] 结果已保存: {file_path}")
+
+
+async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None, llm_extractor: Optional[LLMExtractor] = None) -> Dict[str, Any]:
+    """端到端 Pipeline 主入口（异步并发版本）"""
+
+    print(f"[Pipeline] 开始处理: {input_dir}")
+
+    mineru_data = utils.load_mineru_data(input_dir)
+    md_text = mineru_data["full_md"]
+    content_list_v2 = mineru_data["content_list_v2"]
+
+    if not md_text:
+        print("[Pipeline] 警告: full.md 为空")
+
+    doc_id = utils.build_document_id_from_dir(input_dir)
+
+    doc_type, confidence = classify_document(md_text)
+    print(f"[Pipeline] 文档类型识别: {doc_type} (置信度: {confidence:.2f})")
+
+    result = dict(config.EMPTY_SKELETON)
+    result["document_id"] = doc_id
+    result["document_type"] = doc_type
+
+    exchange, board = utils.infer_exchange_and_board(md_text)
+    if exchange:
+        result["issuer_profile"]["exchange"] = exchange
+    if board:
+        result["issuer_profile"]["board"] = board
+
+    if should_skip(doc_type):
+        print(f"[Pipeline] 文档类型为 {doc_type}，跳过抽取，输出骨架 JSON")
+        if output_dir:
+            _save_result(result, output_dir, doc_id)
+        return result
+
+    print("[Pipeline] 解析章节结构...")
+    parsed = parse_toc_and_chapters(md_text, content_list_v2)
+    categories = list(parsed["chapters"].keys())
+    print(f"[Pipeline] 识别到章节类别: {categories}")
+
+    print("[Pipeline] 提取章节 block 证据...")
+    chapter_blocks = extract_chapter_blocks(content_list_v2, parsed)
+
+    chapter_texts = {}
+    chapter_evidence = {}
+    for cat, blocks in chapter_blocks.items():
+        text, evidence_list = build_chapter_text_with_evidence(blocks, max_chars=15000)
+        chapter_texts[cat] = text
+        chapter_evidence[cat] = evidence_list
+
+    print("[Pipeline] 调用大模型抽取字段（异步并发）...")
+    extractor = llm_extractor or LLMExtractor()
+    extracted = await extractor.extract_all_async(chapter_texts)
+
+    issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
+    financials_count = len(extracted.get("financials", []) or [])
+    projects_count = len(extracted.get("fund_raising_projects", []) or [])
+    risks_count = len(extracted.get("risk_items", []) or [])
+    compliance_count = len(extracted.get("compliance_items", []) or [])
+    print(
+        f"[Pipeline] 抽取结果摘要: "
+        f"issuer={issuer_name or 'N/A'} | "
+        f"财务指标={financials_count}条 | "
+        f"募投项目={projects_count}条 | "
+        f"风险事项={risks_count}条 | "
+        f"合规事项={compliance_count}条"
+    )
+
+    print("[Pipeline] 后处理抽取结果...")
+    result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
+    result["ownership_structure"] = process_ownership_structure(extracted.get("ownership_structure"))
+    result["financials"] = process_financials(extracted.get("financials"))
+    result["fund_raising_projects"] = process_fund_raising_projects(extracted.get("fund_raising_projects"))
+    result["risk_items"] = process_risk_items(extracted.get("risk_items"))
+    result["compliance_items"] = process_compliance_items(extracted.get("compliance_items"))
+
+    print("[Pipeline] 构建证据索引...")
+    # 9. 构建证据索引并关联
+    evidence_index = build_evidence_index(chapter_blocks)
+    result["evidence_index"] = evidence_index
+    result = attach_evidence_ids(result, chapter_blocks)
+
+    print("[Pipeline] 运行基础校验...")
+    warnings = validate_result(result)
+    if warnings:
+        for w in warnings:
+            print(f"[Pipeline] 校验警告: {w}")
+
+    if output_dir:
+        _save_result(result, output_dir, doc_id)
+
+    print("[Pipeline] 处理完成")
+    return result
