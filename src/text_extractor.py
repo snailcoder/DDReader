@@ -1,169 +1,244 @@
-"""文本提取器：按章节聚合 paragraph/table/list，附带页码和 bbox 证据"""
+"""文本提取器：按章节聚合文本，保留页码信息
 
-from typing import Any, Dict, List, Tuple
+适配新的三级章节结构（大章 -> 小节 -> 子节）
+"""
+
+import re
+from typing import Dict, List, Optional, Tuple
 
 from . import utils
+from .chapter_parser import get_section_text, get_chapter_text
 
 
-def _title_similar(a: str, b: str) -> bool:
-    """简单判断两个标题是否相似"""
-    a = a.replace(" ", "").replace("..", "").replace(".", "")
-    b = b.replace(" ", "").replace("..", "").replace(".", "")
-    if len(a) < 4 or len(b) < 4:
-        return a == b
-    return a[:min(len(a), len(b))] == b[:min(len(a), len(b))]
+def extract_section_blocks(section: Dict) -> List[Dict]:
+    """提取小节中的文本块
 
-
-def extract_chapter_blocks(content_list_v2: List[Any], parsed_chapters: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
-    """利用 content_list_v2 为每个章节聚合原始 block，保留证据信息
+    Args:
+        section: 小节，包含 heading, page_idx, text_list, subsections
 
     Returns:
-        {
-            "发行人基本情况": [
-                {"type": "paragraph", "text": "...", "page_no": 3, "bbox": [...]},
-                {"type": "table", "html": "<table>...</table>", "caption": "...", "page_no": 3, "bbox": [...]},
-                ...
-            ],
-            ...
-        }
+        文本块列表，每个块包含:
+        - text: 文本内容
+        - page_idx: 页码
+        - block_type: 块类型 (text/table)
     """
-    # 先建立 heading -> category 映射
-    heading_category = {}
-    for cat, info in parsed_chapters.get("chapters", {}).items():
-        for t in info.get("titles", []):
-            heading_category[t] = cat
+    blocks = []
 
-    # 遍历 content_list_v2，为每个 block 判断所属章节
-    chapter_blocks: Dict[str, List[Dict[str, Any]]] = {}
-    current_category = "未分类"
-
-    for page_idx, page_blocks in enumerate(content_list_v2):
-        page_no = page_idx + 1
-        for block in page_blocks:
-            block_type = block.get("type", "unknown")
-
-            # 如果 block 是 title，尝试更新当前章节
-            if block_type == "title":
-                title_text = _extract_block_text(block)
-                matched_cat = None
-                for h, cat in heading_category.items():
-                    if h in title_text or title_text in h or _title_similar(h, title_text):
-                        matched_cat = cat
-                        break
-                if matched_cat:
-                    current_category = matched_cat
-
-            # 跳过 page_header / page_number / page_footnote
-            if block_type in {"page_header", "page_number", "page_footnote", "image"}:
-                continue
-
-            # 构建证据记录
-            evidence = {
-                "type": block_type,
-                "page_no": page_no,
-                "bbox": block.get("bbox", []),
-            }
-
-            if block_type == "table":
-                evidence["html"] = block.get("content", {}).get("html", "")
-                evidence["caption"] = _extract_caption(block)
-                evidence["footnote"] = _extract_footnote(block)
-                evidence["text"] = _html_to_text(evidence["html"])
-            elif block_type == "paragraph":
-                evidence["text"] = _extract_block_text(block)
-            elif block_type == "list":
-                evidence["text"] = _extract_block_text(block)
-            elif block_type == "title":
-                evidence["text"] = title_text
-            else:
-                evidence["text"] = _extract_block_text(block)
-
-            cat = current_category
-            if cat not in chapter_blocks:
-                chapter_blocks[cat] = []
-            chapter_blocks[cat].append(evidence)
-
-    return chapter_blocks
-
-
-def _extract_block_text(block: Dict[str, Any]) -> str:
-    """从 block 中提取纯文本"""
-    content = block.get("content", {})
-    texts = []
-
-    # title
-    if "title_content" in content:
-        for part in content["title_content"]:
-            texts.append(part.get("content", ""))
-    # paragraph / list
-    elif "paragraph_content" in content:
-        for part in content["paragraph_content"]:
-            texts.append(part.get("content", ""))
-    # 兜底
+    # 处理子节
+    subsections = section.get("subsections", [])
+    if subsections:
+        for sub in subsections:
+            for item in sub.get("text_list", []):
+                text = item.get("text", "")
+                if text.strip():
+                    # 检测是否包含表格
+                    if "<table>" in text:
+                        # 提取表格
+                        tables = re.findall(r"<table>.*?</table>", text, re.DOTALL)
+                        for table in tables:
+                            blocks.append({
+                                "text": table,
+                                "page_idx": item.get("page_idx", 0),
+                                "block_type": "table",
+                            })
+                        # 提取非表格文本
+                        non_table_text = re.sub(r"<table>.*?</table>", "", text, flags=re.DOTALL).strip()
+                        if non_table_text:
+                            blocks.append({
+                                "text": non_table_text,
+                                "page_idx": item.get("page_idx", 0),
+                                "block_type": "text",
+                            })
+                    else:
+                        blocks.append({
+                            "text": text,
+                            "page_idx": item.get("page_idx", 0),
+                            "block_type": "text",
+                        })
     else:
-        texts.append(str(content))
+        # 没有子节，直接使用 text_list
+        for item in section.get("text_list", []):
+            text = item.get("text", "")
+            if text.strip():
+                if "<table>" in text:
+                    tables = re.findall(r"<table>.*?</table>", text, re.DOTALL)
+                    for table in tables:
+                        blocks.append({
+                            "text": table,
+                            "page_idx": item.get("page_idx", 0),
+                            "block_type": "table",
+                        })
+                    non_table_text = re.sub(r"<table>.*?</table>", "", text, flags=re.DOTALL).strip()
+                    if non_table_text:
+                        blocks.append({
+                            "text": non_table_text,
+                            "page_idx": item.get("page_idx", 0),
+                            "block_type": "text",
+                        })
+                else:
+                    blocks.append({
+                        "text": text,
+                        "page_idx": item.get("page_idx", 0),
+                        "block_type": "text",
+                    })
 
-    return "".join(texts).strip()
-
-
-def _extract_caption(block: Dict[str, Any]) -> str:
-    """提取表格标题"""
-    caption_parts = block.get("content", {}).get("table_caption", [])
-    return "".join(p.get("content", "") for p in caption_parts).strip()
-
-
-def _extract_footnote(block: Dict[str, Any]) -> str:
-    """提取表格脚注"""
-    footnote_parts = block.get("content", {}).get("table_footnote", [])
-    return "".join(p.get("content", "") for p in footnote_parts).strip()
-
-
-def _html_to_text(html: str) -> str:
-    """简单将 HTML table 转为可读文本"""
-    import re
-    text = re.sub(r"<tr>", "\n| ", html)
-    text = re.sub(r"<td[^>]*>", "", text)
-    text = re.sub(r"</td>", " | ", text)
-    text = re.sub(r"<th[^>]*>", "", text)
-    text = re.sub(r"</th>", " | ", text)
-    text = re.sub(r"<table>|</table>|<tbody>|</tbody>|<thead>|</thead>|<tfoot>|</tfoot>|<colgroup>|</colgroup>|<col[^>]*/?>", "", text)
-    text = re.sub(r"<br\s*/?>", "\n", text)
-    text = re.sub(r"<[^>]+>", "", text)
-    return text.strip()
+    return blocks
 
 
-def build_chapter_text_with_evidence(chapter_blocks: List[Dict[str, Any]], max_chars: int = 15000) -> Tuple[str, List[Dict[str, Any]]]:
-    """将章节 block 聚合为一段文本（保留表格 HTML），同时返回证据列表"""
-    parts = []
+def build_section_text_with_evidence(blocks: List[Dict],
+                                     max_chars: int = 15000) -> Tuple[str, List[Dict]]:
+    """将文本块聚合为一段文本，同时返回证据列表
+
+    Args:
+        blocks: 文本块列表
+        max_chars: 最大字符数
+
+    Returns:
+        (聚合文本, 证据列表)
+    """
+    text_parts = []
     evidence_list = []
-    total_len = 0
+    current_len = 0
 
-    for idx, block in enumerate(chapter_blocks):
-        if block["type"] == "table" and block.get("html"):
-            segment = f"\n[表格 {idx+1}]:\n{block['html']}\n"
-            if block.get("caption"):
-                segment = f"\n[表格 {idx+1} 标题: {block['caption']}]\n{block['html']}\n"
-            if block.get("footnote"):
-                segment += f"[表格 {idx+1} 脚注: {block['footnote']}]\n"
-        else:
-            segment = block.get("text", "")
-            if segment:
-                segment += "\n"
+    for i, block in enumerate(blocks):
+        text = block.get("text", "")
+        if not text.strip():
+            continue
 
-        if total_len + len(segment) > max_chars:
-            parts.append("\n...[后续内容因长度限制已截断]")
+        # 检查长度限制
+        if current_len + len(text) > max_chars:
             break
 
-        parts.append(segment)
-        total_len += len(segment)
+        # 添加文本
+        if block.get("block_type") == "table":
+            text_parts.append(f"[表格 {i+1}]: {text}")
+        else:
+            text_parts.append(text)
 
+        current_len += len(text)
+
+        # 构建证据
+        evidence_id = f"ev_{i:04d}"
         evidence_list.append({
-            "evidence_id": f"ev_{idx:04d}",
-            "page_no": block.get("page_no"),
-            "chapter": "",  # 由调用方填充
-            "block_type": block.get("type"),
-            "quote": block.get("text", "")[:200],
-            "bbox": block.get("bbox", []),
+            "evidence_id": evidence_id,
+            "page_idx": block.get("page_idx", 0),
+            "block_type": block.get("block_type", "text"),
+            "text": text[:300],  # 只保留前300字作为引用
         })
 
-    return "".join(parts), evidence_list
+    full_text = "\n\n".join(text_parts)
+    return full_text, evidence_list
+
+
+def extract_chapter_texts(parsed_chapters: Dict) -> Dict[str, Dict]:
+    """从解析结果中提取各章节的文本
+
+    Args:
+        parsed_chapters: parse_chapters 的返回结果
+
+    Returns:
+        章节文本映射，格式:
+        {
+            "章节标题": {
+                "text": "章节文本",
+                "evidence": [...],
+                "page_range": (start, end)
+            }
+        }
+    """
+    result = {}
+
+    for chapter in parsed_chapters.get("chapters", []):
+        chapter_heading = chapter.get("heading", "")
+
+        # 遍历小节
+        for section in chapter.get("sections", []):
+            section_heading = section.get("heading", "")
+
+            # 提取文本块
+            blocks = extract_section_blocks(section)
+
+            if not blocks:
+                continue
+
+            # 构建文本和证据
+            text, evidence = build_section_text_with_evidence(blocks)
+
+            if text.strip():
+                # 使用大章标题作为key
+                key = chapter_heading
+                if key not in result:
+                    result[key] = {
+                        "text": "",
+                        "evidence": [],
+                        "page_range": (chapter.get("page_idx", 0), chapter.get("page_idx", 0)),
+                    }
+
+                result[key]["text"] += "\n\n" + text
+                result[key]["evidence"].extend(evidence)
+
+                # 更新页码范围
+                if evidence:
+                    max_page = max(e.get("page_idx", 0) for e in evidence)
+                    result[key]["page_range"] = (
+                        result[key]["page_range"][0],
+                        max_page,
+                    )
+
+    return result
+
+
+def get_text_for_field(parsed_chapters: Dict, field_category: str,
+                       chapter_keywords: Dict[str, List[str]]) -> Tuple[str, List[Dict]]:
+    """获取特定字段类别对应的文本
+
+    Args:
+        parsed_chapters: 解析结果
+        field_category: 字段类别 (issuer_profile, financials, etc.)
+        chapter_keywords: 章节关键词映射
+
+    Returns:
+        (文本, 证据列表)
+    """
+    # 字段到章节的映射
+    field_to_chapters = {
+        "issuer_profile": ["发行人基本情况", "概览"],
+        "ownership_structure": ["发行人基本情况", "公司治理与独立性"],
+        "financials": ["财务会计信息", "业务与技术"],
+        "fund_raising_projects": ["募集资金运用"],
+        "risk_items": ["风险因素"],
+        "compliance_items": ["其他重要事项", "公司治理与独立性"],
+    }
+
+    target_chapters = field_to_chapters.get(field_category, [])
+    all_text = []
+    all_evidence = []
+
+    for chapter in parsed_chapters.get("chapters", []):
+        chapter_heading = chapter.get("heading", "")
+
+        # 检查该大章是否与目标章节匹配
+        is_target = any(kw in chapter_heading for kw in target_chapters)
+        if not is_target:
+            # 也检查小节标题
+            for section in chapter.get("sections", []):
+                section_heading = section.get("heading", "")
+                if any(kw in section_heading for kw in target_chapters):
+                    is_target = True
+                    break
+
+        if is_target:
+            # 提取该大章的文本
+            blocks = []
+            for section in chapter.get("sections", []):
+                section_blocks = extract_section_blocks(section)
+                blocks.extend(section_blocks)
+
+            if blocks:
+                text, evidence = build_section_text_with_evidence(blocks)
+                if text.strip():
+                    all_text.append(text)
+                    all_evidence.extend(evidence)
+
+    combined_text = "\n\n".join(all_text)
+    return combined_text, all_evidence
