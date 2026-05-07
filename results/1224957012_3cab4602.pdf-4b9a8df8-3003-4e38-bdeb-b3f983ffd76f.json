@@ -9,8 +9,8 @@
     "board": "科创板",
     "legal_representative": "宋亮",
     "registered_address": null,
-    "industry": "专用设备制造业",
-    "main_business": "心血管疾病精准诊疗创新医疗器械的研发、生产和销售",
+    "industry": "专用设备制造业（C35）中医疗仪器设备及器械制造业（358）的医疗诊断、监护及治疗设备制造行业",
+    "main_business": "心血管疾病精准诊疗创新医疗器械研发、生产和销售",
     "source_evidence_id": "ev_0002",
     "establishment_date": "2015-12-11",
     "registered_capital": {
@@ -21,15 +21,751 @@
   },
   "ownership_structure": {
     "controlling_shareholder": [],
-    "actual_controller": [],
+    "actual_controller": [
+      {
+        "name": "宋亮",
+        "control_type": "控股",
+        "source_evidence_id": null
+      }
+    ],
     "concerted_action_flag": false,
-    "top_shareholders": [],
+    "top_shareholders": [
+      {
+        "name": "宋亮",
+        "shareholding_ratio": 0.1742,
+        "direct_or_indirect": null,
+        "rank": 1,
+        "source_evidence_id": null
+      },
+      {
+        "name": "红杉智盛",
+        "shareholding_ratio": 0.101759,
+        "direct_or_indirect": null,
+        "rank": 2,
+        "source_evidence_id": null
+      },
+      {
+        "name": "Decheng Insight",
+        "shareholding_ratio": 0.096743,
+        "direct_or_indirect": null,
+        "rank": 3,
+        "source_evidence_id": null
+      },
+      {
+        "name": "北芯橙长",
+        "shareholding_ratio": 0.050021,
+        "direct_or_indirect": null,
+        "rank": 4,
+        "source_evidence_id": null
+      },
+      {
+        "name": "北芯共创",
+        "shareholding_ratio": 0.042422,
+        "direct_or_indirect": null,
+        "rank": 5,
+        "source_evidence_id": null
+      },
+      {
+        "name": "北芯同创",
+        "shareholding_ratio": 0.041697,
+        "direct_or_indirect": null,
+        "rank": 6,
+        "source_evidence_id": null
+      },
+      {
+        "name": "QM161",
+        "shareholding_ratio": 0.04756,
+        "direct_or_indirect": null,
+        "rank": 7,
+        "source_evidence_id": null
+      },
+      {
+        "name": "珠海夏尔巴",
+        "shareholding_ratio": 0.047214,
+        "direct_or_indirect": null,
+        "rank": 8,
+        "source_evidence_id": null
+      },
+      {
+        "name": "Core Heart",
+        "shareholding_ratio": 0.042017,
+        "direct_or_indirect": null,
+        "rank": 9,
+        "source_evidence_id": null
+      },
+      {
+        "name": "石河子泰誉",
+        "shareholding_ratio": 0.036058,
+        "direct_or_indirect": null,
+        "rank": 10,
+        "source_evidence_id": null
+      }
+    ],
     "source_evidence_id": "ev_0068"
   },
-  "financials": [],
-  "fund_raising_projects": [],
-  "risk_items": [],
-  "compliance_items": [],
+  "financials": [
+    {
+      "field_name": "营业收入",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": 9245.19,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "营业收入",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": 18397.72,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "营业收入",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": 31660.43,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "营业收入",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": 25886.16,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": -30043.71,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": -15520.5,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": -5373.97,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": 4551.27,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "扣非净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": -18941.89,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "扣非净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": -17943.63,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "扣非净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": -7344.63,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "扣非净利润",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": 3637.52,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "研发费用",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": 13195.3,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "研发费用",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": 13141.49,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "研发费用",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": 10143.01,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "研发费用",
+      "field_scope": "合并利润表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": 3974.12,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "资产总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "资产总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "资产总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "资产总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "负债总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "负债总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "负债总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "负债总额",
+      "field_scope": "合并资产负债表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "经营活动现金流",
+      "field_scope": "合并现金流量表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "经营活动现金流",
+      "field_scope": "合并现金流量表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "经营活动现金流",
+      "field_scope": "合并现金流量表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "经营活动现金流",
+      "field_scope": "合并现金流量表",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "毛利率",
+      "field_scope": "管理层分析",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2022-12-31",
+      "value": 0.635,
+      "unit": "%",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "毛利率",
+      "field_scope": "管理层分析",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2023-12-31",
+      "value": 0.6502,
+      "unit": "%",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "毛利率",
+      "field_scope": "管理层分析",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2024-12-31",
+      "value": 0.6332,
+      "unit": "%",
+      "currency": "CNY"
+    },
+    {
+      "field_name": "毛利率",
+      "field_scope": "管理层分析",
+      "chapter": "第六节 财务会计信息与管理层分析",
+      "source_evidence_id": null,
+      "period": "2025-06-30",
+      "value": 0.6906,
+      "unit": "%",
+      "currency": "CNY"
+    }
+  ],
+  "fund_raising_projects": [
+    {
+      "project_name": "介入类医疗器械产业化基地建设项目",
+      "project_type": "扩产",
+      "total_investment": {
+        "value": 38195.25,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "planned_use_of_raised_funds": {
+        "value": 38195.25,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "construction_period": "48个月",
+      "implementation_entity": null,
+      "source_evidence_id": null
+    },
+    {
+      "project_name": "介入类医疗器械研发项目",
+      "project_type": "研发",
+      "total_investment": {
+        "value": 47025.88,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "planned_use_of_raised_funds": {
+        "value": 47025.88,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "construction_period": "48个月",
+      "implementation_entity": null,
+      "source_evidence_id": null
+    },
+    {
+      "project_name": "补充流动资金",
+      "project_type": "补充流动资金",
+      "total_investment": {
+        "value": 10000.0,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "planned_use_of_raised_funds": {
+        "value": 10000.0,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "construction_period": null,
+      "implementation_entity": null,
+      "source_evidence_id": null
+    }
+  ],
+  "risk_items": [
+    {
+      "risk_title": "产品研发风险",
+      "risk_category": "技术风险",
+      "risk_description": "心血管疾病创新介入医疗器械产品的研发和获批上市具有一定的风险，创新程度越高的产品，对应的研发风险也越大，研究成果能否顺利实现产业化存在较大的不确定性。截至2025年9月30日，公司已获批及在研心血管介入医疗器械产品共有17个，覆盖 IVUS 系统、FFR 系统、血管通路产品、冲击波球囊治疗系统和电生理解决方案五大产品类别。公司虽通过核心产品 IVUS 系统和 FFR 系统的研发建立了技术预研、产品研发验证等研发体系，也实现了 IVUS 系统和 FFR 系统在国内、欧洲上市，但冲击波球囊治疗系统和电生理解决方案等在研产品仍处于临床验证前期，存在研发失败的风险。若产品研发过程受研发团队变动、资金投入不足、研发验证失败、临床试验失败等不利因素影响，可能存在不能按既定目标成功开发新产品，或新产品开发进度或性能不达预期的风险。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "产品临床试验及注册风险",
+      "risk_category": "技术风险",
+      "risk_description": "医疗器械注册临床试验流程包括递交临床试验方案、通过研究中心伦理审批、完成临床试验入组、统计及分析临床试验数据等。由于临床试验结果可能受到入组失败、临床试验质量管理不足、终点指标未达成等负面因素的影响，公司无法保证均能顺利通过各个流程，因此产品存在临床试验有效性和安全性不及预期的风险。此外，在医疗器械注册评审过程中，可能存在因型式检验报告、临床试验数据等注册申报资料不满足规范或注册法规要求变更，导致公司延期取得产品注册批件、获批适应症范围缩小甚至无法取得产品注册批件等情形。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "知识产权相关风险",
+      "risk_category": "法律风险",
+      "risk_description": "公司拥有的专利、商标等知识产权是公司核心竞争力的重要组成部分。因专利申请程序复杂且耗时较长，诸多因素可能导致公司专利无效或无法成功取得专利批准或授权，最终无法对公司的核心技术实现有效保护并形成壁垒。此外，由于市场竞争日趋激烈和其他知识产权信息获取方式有限等因素，可能存在即使公司通过合理调查亦无法获知或及时更新国内外全部第三方发布的知识产权或其提交的知识产权申请的情形，进而可能导致公司产品侵犯第三方专利权。若第三方对公司成功提起侵权、盗用或以其他方式侵犯知识产权的索偿，公司可能需停止研发、生产或出售受到质疑的知识产权涉及的产品，并支付相应的赔偿。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "技术升级及产品迭代风险",
+      "risk_category": "技术风险",
+      "risk_description": "心血管疾病的诊疗方法经历了长期且深远的技术变革，创新技术的出现不断解决未被满足和新增的临床需求。如果公司未能敏锐洞察到最新技术发展方向及临床需求，或因研发能力不足、研发方向错误、产品设计和性能参数不具有竞争力导致在技术升级及产品迭代中落后，将会对公司核心竞争力产生冲击，公司已获批及在研产品可能面临被市场淘汰、失去商业价值的风险，从而对公司的持续盈利能力产生重大不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "高级管理人员、核心技术人员及其他关键岗位员工流失风险",
+      "risk_category": "经营风险",
+      "risk_description": "医疗器械行业属于多学科交叉的知识密集型领域，招募经验丰富的各类人才并维持稳定的研发、临床、生产、营销和管理团队对公司的持续创新和稳定经营至关重要。若公司未能成功吸引、激励、培训高级管理人员、核心技术人员或其他关键岗位的员工，维持上述关键人员的稳定性，可能对公司实施业务战略的能力及最终实现经营目标造成不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "客户集中度较高的风险",
+      "risk_category": "经营风险",
+      "risk_description": "报告期内，公司处于产品商业化初期，客户主要为境内和境外经销商。报告期内，公司向前五大客户销售取得的收入在公司主营业务收入中的占比分别为 82.06%、62.28%、74.21% 和 78.29%。若未来因公司经销商授权区域及经销商层级或架构调整，或者经销商自身经营、违反合约、销售纠纷等原因导致其与公司的合作出现波动，可能会影响公司正常的销售活动，在短期内对公司的业绩产生不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "产品商业化不及预期的风险",
+      "risk_category": "经营风险",
+      "risk_description": "创新医疗器械从获批上市到形成规模化销售，需要经过量产、市场准入及推广、医生培训、医院招标入院及临床跟台支持等一系列环节，存在较多不可控因素。若公司获批上市的产品未能在医生、患者、医院或医疗卫生领域相关的各方取得认可，将给公司商业化过程造成不利影响。此外，公司营销团队招募及发展可能不达预期，也将制约公司商业化推广的进程。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "产品质量风险及公司质量保证体系风险",
+      "risk_category": "经营风险",
+      "risk_description": "心血管介入三类医疗器械会直接接触人体主要血管和重要器官，在临床应用中存在一定的风险，并且其安全性表现受到严格的法规监控。若在来料检验及控制、生产、质量检验、产品存储运输或者产品使用等环节出现偶发性设施设备故障或人为失误等情形，将可能导致产品质量事故的发生。若未来公司产品出现重大质量问题，或公司质量保证体系的运行及管理违背相关法规要求，公司将面临产品召回、主管部门处罚和产品责任索赔等风险。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "与第三方合作的风险",
+      "risk_category": "经营风险",
+      "risk_description": "公司与 CRO、第三方检验所、动物实验中心、第三方灭菌服务商和其他服务提供商有较为紧密的合作。若第三方未能完整履行合同义务、履行合同未达预期或未能遵守相关监管规定，公司所获得的产品检验报告、临床研究数据在质量或准确性方面将受到影响。此外，变更技术服务提供商亦可能导致公司产生额外的支出、产品获批时间延期、技术秘密泄露等情况。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "员工、合作伙伴及经销商不当行为风险",
+      "risk_category": "法律风险",
+      "risk_description": "公司业务开展过程中涉及公司员工、其他第三方合作机构与医疗机构、医生及患者之间的交流互动，尽管公司内部已经建立了与反商业贿赂相关的内控制度，仍存在公司员工、其他第三方合作机构通过违反反商业贿赂及其他相关法律的手段以提高公司产品的销量的风险。若出现上述情形，而公司又无法对其进行有效控制，公司声誉可能受到损害。此外，公司可能需要对公司员工、其他第三方合作机构所采取的行动承担责任，可能使公司面临被监管机构调查及处罚的风险。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "收入增长不及预期的风险",
+      "risk_category": "财务风险",
+      "risk_description": "报告期内，公司有 11款产品实现商业化，其中核心产品 IVUS 系统、FFR 系统分别于 2022 年及 2020 年获批上市，开始产生销售收入，虽然前期收入增速较高，但由于创新产品上市前期的市场准入、市场教育及推广至实现规模销售需要一定周期，公司各期营业收入分别为 9,245.19 万元、18,397.72 万元、31,660.43 万元和 25,886.16 万元，主要以IVUS 系统和FFR 系统销售收入为主，尚未达到较大规模。未来若国内精准及复杂 PCI 市场增长不及预期或者国际市场拓展受限、公司下游客户发生不利变化、政策变化及其他商业化不利影响因素出现，公司产品市场扩张速度将放缓，公司收入将无法保持高速增长。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "毛利率波动风险",
+      "risk_category": "财务风险",
+      "risk_description": "报告期各期，公司主营业务毛利率分别为 63.50%、65.02%、63.32% 和 69.06%，呈稳定态势。若未来宏观经济、医疗器械行业政策、医保政策、集中带量采购政策、市场竞争程度、原材料价格、供应商供应等发生重大不利变化，将可能导致公司产品销售价格下降，或公司不能通过提高生产效率、技术革新、工艺革新、扩大生产规模等降低生产成本，公司毛利率可能会有所下降，从而对公司盈利能力造成不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "股权激励导致股份支付金额持续较大的风险",
+      "risk_category": "财务风险",
+      "risk_description": "为进一步建立、健全公司的激励机制，促使员工勤勉尽责地为公司的长期发展服务，公司在报告期内分别实施了多次员工股权激励。报告期内，公司实施股权激励确认股份支付费用分别为 14,946.47 万元、6,185.95 万元、3,937.16 万元和 2,003.17 万元，导致公司累计未弥补亏损增加。尽管股权激励有助于稳定人员结构以及留住核心人才，但可能导致当期股份支付金额较大，从而对当期净利润造成不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "递延所得税资产减值风险",
+      "risk_category": "财务风险",
+      "risk_description": "截至 2025 年 6 月 30 日，公司合并资产负债表中递延所得税资产的账面价值为10,702.07万元，占报告期末净资产的比例为 15.05%。公司递延所得税资产主要由可抵扣亏损等可抵扣暂时性差异产生，其中可抵扣亏损主要为母公司前期亏损累积形成。若未来宏观经济、市场条件、行业格局等发生重大不利变化，公司在未来期限内无法形成足够的应纳税所得额，公司递延所得税资产可能存在减值的风险，从而对未来期间的净利润产生不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "实际控制人持股比例较低的风险",
+      "risk_category": "法律风险",
+      "risk_description": "截至 2025 年 9 月 30 日，本次发行前，公司整体股权结构较为分散，公司实际控制人宋亮的持股比例较低，直接持有公司 16.1530% 的股份。除自身直接持有公司股份外，宋亮通过担任公司员工持股平台北芯共创、北芯橙长及北芯同创的执行事务合伙人控制公司 13.4140% 的股份，宋亮自身及通过其控制的员工持股平台合计控制公司29.5670% 的股份。本次发行后实际控制人的持股比例将进一步降低，存在控制权发生变化的风险，从而对公司经营管理产生不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "公司可能无法取得或有效维持相关资质证书的风险",
+      "risk_category": "法律风险",
+      "risk_description": "我国对医疗器械行业实施分类监管和许可制度，公司产品的研发、生产及销售受国家医疗器械行业监管政策监督管理及影响，也需要符合相应进入国际市场医疗器械监管及许可要求。公司目前持有的医疗器械产品资质文件存在有效期限，且存在有效性维持的相关要求。若公司无法根据法律法规或监管要求及时取得资质、维持资质有效性或未能及时续展资质有效期，可能将导致公司无法进行相关生产及销售活动，从而对公司的业务造成不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "收入无法按计划增长及存在累计未弥补亏损的风险",
+      "risk_category": "财务风险",
+      "risk_description": "报告期内，公司营业收入分别为 9,245.19 万元、18,397.72 万元、31,660.43 万元和25,886.16 万元。公司未来销售收入的增长主要取决于新产品研发和注册、全球市场开拓、产品商业化推广进程、市场竞争格局和行业技术发展等因素。公司存在累计未弥补亏损及其持续情形可能导致自身资金状况无法满足产品研发、市场推广及销售等方面的需求，使其存在收入增长不及预期的风险，并导致公司存在累计未弥补亏损。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "发行人研发投入、业务拓展、人才引进、团队稳定等方面受到限制或其他不利影响的风险",
+      "risk_category": "经营风险",
+      "risk_description": "公司业绩的稳定增长依赖于产品研发、业务拓展、市场推广和销售、因产能新增而带来的固定资产投资等经营活动。报告期内，发行人尚未盈利且存在累计未弥补亏损，发行人营运资金主要依赖于外部融资及经营活动现金流入。若经营发展所需的开支超过可获得的外部融资，将会对公司的现金流造成压力。如果公司无法在未来一段期间内取得盈利或筹措到足够资金，公司或将推迟在研产品研发和临床试验开展，推迟、削减或终止未来具有商业价值的研发项目，这将不利于公司产品的市场开拓和销售等商业化活动，从而对公司的经营业绩、财务状况及业务前景造成不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "发行人上市后触及终止上市标准及投资者可能面临投资亏损的风险",
+      "risk_category": "其他",
+      "risk_description": "公司上市后仍可能保持金额较大的研发费用、销售费用和管理费用，以保持和继续提升公司的各项核心竞争力。如果公司未来销售收入未能按计划增长或未能在有效的集中带量采购过程中实现积极的应对策略，可能导致收入及毛利出现大幅波动，收入不足以覆盖公司日常经营成本及各项费用开支，进而可能触发《科创板上市规则》第 12.4.2 条规定的财务类强制退市条件的风险。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "医疗器械行业政策变动的风险",
+      "risk_category": "政策风险",
+      "risk_description": "医疗器械行业景气度与政策环境具有较高的关联性，较易受到医疗行业政策的影响。随着我国医疗卫生体制改革的不断深入和社会医疗保障体制的逐步完善，医疗卫生市场的政策环境可能持续面临重大变化。公司心血管疾病精准诊疗领域的介入和植入产品属于三类医疗器械，受到更为全面和严格的监管。如公司在经营策略上未能与国家政策导向保持一致，或未能及时根据国家相关法律法规的变化进行相应调整，公司经营将受到不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "集中带量采购政策实施风险",
+      "risk_category": "政策风险",
+      "risk_description": "随着未来心血管介入医疗器械全面实施集中带量采购条件逐渐成熟，公司其他产品可能逐步被纳入集中带量采购范围。若公司未能及时落实应对措施，导致公司产品最终未能中标，则将可能致使规定集中带量采购周期内，公司失去在相应省市区域的大部分市场份额，从而导致公司业绩大幅下滑；若公司产品成功中标，但以价换量效应未能发挥积极作用，也会对公司业绩造成不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "DRG/DIP 支付方式改革风险",
+      "risk_category": "政策风险",
+      "risk_description": "现有 DRG/DIP 支付的推行尚未显现对公司产品商业化的影响，但 DRG/DIP 支付政策的持续推行可能导致公司现有已商业化产品和在研产品在未来分组中将不占优势。若公司产品未能进入对应疾病诊断分组，使得使用公司产品并无足够医疗保险覆盖，患者可能选择医院所推荐的其他替代诊疗方法和产品，导致公司产品临床使用率下降，进而对公司产品销售产生不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "市场竞争风险",
+      "risk_category": "行业风险",
+      "risk_description": "在国民收入水平不断提升、居民健康意识逐渐增强、人口老龄化日益严重、心血管疾病高发、医生患者对于精准诊疗认知和需求不断提升等背景下，创新心血管介入医疗器械具有广阔的市场前景，心血管精准诊疗行业高速增长。由跨国巨头公司及国内新兴公司组成的行业参与者正在积极推广及销售与公司类似的产品。若公司未来在技术迭代更新、产品定价营销、品牌知名度提升等方面表现不如预期，公司将难以在竞争日渐激烈的市场中保持优势并稳定发展，这将会对公司业绩带来重大不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "关于直接测量 FFR市场规模存在不确定性风险",
+      "risk_category": "行业风险",
+      "risk_description": "对于指导 PCI 以治疗冠心病，目前临床医生所采用的传统主流诊断方法仍为冠状动脉造影。在精准PCI发展过程中，如临床医生的使用意识转变较慢，将影响 FFR 产品在国内渗透率的提升和公司 FFR 系统的进一步市场推广。直接测量 FFR 产品目前仍存在终端支付费用相较于其他产品偏高的问题，对其临床渗透率的提升有一定的影响。综上所述，公司核心产品 FFR 系统将面临临床医生使用意识转变、终端支付费用偏高、DRG 支付方式改革和基于影像技术路线竞品的影响，如市场未能实现进一步发展及公司未能克服相关不利因素，将造成公司核心产品 FFR 系统市场推广不及预期的不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "核心产品面临市场竞争及技术竞争风险",
+      "risk_category": "行业风险",
+      "risk_description": "公司核心产品 IVUS 系统为首个国内获批上市的自主创新 60MHz 高清高速国产IVUS 产品，会遇到来自竞争对手同类 IVUS 产品和其他腔内影像学技术（如 OCT、IVUS+OCT）的直接竞争。公司核心产品 FFR 系统作为首个获批上市的国产直接测量 FFR 系统，会遇到来自竞争对手同类 FFR 产品和基于影像的 FFR 产品的竞争。如果其他直接测量 FFR 系统、基于影像的 FFR 技术或其他新型技术发展迅速，使其产品在临床易用性及可靠性进一步提升，临床指导的证据更充分和明确，且价格更具有竞争力，而公司产品迭代升级效果并不能与之匹配，则存在公司产品丧失竞争力，市场逐步被竞品或基于影像的 FFR 产品占领的风险。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "产品价格快速下降风险",
+      "risk_category": "行业风险",
+      "risk_description": "创新心血管介入医疗器械行业处于快速发展中，新技术快速迭代、竞争加剧以及频繁变动的价格调控政策都将对产品价格有较大影响。报告期内，公司 FFR 系统销售价格和终端进院价格基本保持稳定，IVUS 系统于2023年及2024年开始进入省际联盟集采，销售价格和终端价格下降。如果未来市场竞争进一步加剧且同类产品价格快速下降，公司可能跟进采取降价策略；若相关产品因政策变动而被纳入医保支付方式改革或带量采购的范围，产品终端进院价格及患者支付价格可能大幅下降。如因上述因素导致产品价格快速下降，且以价换量效应未能发挥积极作用，则会对发行人的业绩造成重大不利影响。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "股价波动的风险",
+      "risk_category": "其他",
+      "risk_description": "公司股票发行上市后，股票价格不仅取决于公司的经营状况，同时也受国家宏观政策、国内外政治经济环境、市场供需变化以及投资者心理预期的影响而发生波动。此外，根据《上海证券交易所交易规则（2023 年修订）》，首次公开发行上市的股票在上市后的前 5 个交易日不设涨跌幅限制，另外，科创板股票竞价交易还设置了较宽的涨跌幅限制，涨跌幅比例为 20%，因此，公司在科创板发行上市后，公司股票在二级市场的交易价格存在出现较大波动幅度的风险。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "预测性陈述存在不确定性风险",
+      "risk_category": "其他",
+      "risk_description": "本招股说明书列载有若干预测性的陈述，涉及公司所处行业的未来市场规模与需求、公司未来发展规划、业务发展目标等方面的预测与讨论。虽然管理层力求预测性陈述的依据与假设均审慎与合理，但亦需要提请投资者注意，本招股说明书的预测性陈述仍有重大不确定性。鉴于该等预测与假设均有风险及不确定性因素，本招股说明书所载明的任何预测性及前瞻性陈述，不应被视为本公司的承诺与声明。",
+      "severity_level": "低",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "公司未来规模扩张引致的管理风险",
+      "risk_category": "经营风险",
+      "risk_description": "发行人正处于快速扩张时期，业务和资产规模的不断扩大、商业竞争环境的持续规范，将对发行人的资源整合、技术开发、财务管理、市场开拓、管理体制激励考核等方面的能力提出更高的要求。若发行人的经营管理水平不能适应发行人规模扩张的需要，将对发行人的团队稳定、经营效率和盈利能力产生一定的影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "募投项目用地存在尚未落实和尚未取得环评批复的风险",
+      "risk_category": "其他",
+      "risk_description": "公司募投项目“介入类医疗器械产业化基地建设项目”选址为广东省深圳市坪山区坑梓街道已租赁场地和广东省深圳市龙华区观湖街道拟购置地块。就龙华区该幅地块，公司已于 2022 年 12 月与深圳市龙华区人民政府签署了《战略合作协议》，但公司暂未取得龙华区该幅地块土地使用权不动产权证书，故暂未开展环境影响评价。若公司无法按照预期取得该幅地块的土地使用权，无法及时完成与该幅地块相关的环境影响评价，可能会对公司募投项目“介入类医疗器械产业化基地建设项目”的投资进度、建设进度产生较大影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "募集资金投资项目实施风险",
+      "risk_category": "其他",
+      "risk_description": "本次募集资金投资项目经过公司慎重、充分的可行性研究论证，充分考虑了公司现有技术条件、未来发展规划、市场竞争环境以及行业的未来发展趋势等因素。若募集资金不能如期到位、项目实施的组织管理不力，可能会影响募集资金投资项目的实施效果，从而影响公司预期收益的实现。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "生产类投资项目不能达到预期收益的风险",
+      "risk_category": "其他",
+      "risk_description": "本次募投项目中介入类医疗器械产业化基地建设项目投资金额较大，建设内容包括拟在已租赁场地中建设生产线和在拟购置地块中建设集生产、研发、办公为一体的总部基地。公司已结合当前市场环境、行业政策、在研产品管线规划、公司经营状况和未来发展战略等因素，对介入类医疗器械产业化基地建设内容进行了可行性评估，但仍存在因市场环境、产品竞争格局、相关政策等发生较大变化从而导致该项目不能达到预期收益的可能性，从而可能对公司的经营业绩产生不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "研发类投资项目可能对公司经营业绩产生不利影响的风险",
+      "risk_category": "技术风险",
+      "risk_description": "本次较大比例的募集资金拟投入于介入类医疗器械研发项目。该研发项目存在失败的风险，具体内容请参见本招股说明书“第三节 风险因素”之“（一）技术风险”之“1、产品研发风险”和“2、产品临床试验及注册风险”。",
+      "severity_level": "高",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "新增固定资产折旧、研发和销售费用影响未来盈利能力的风险",
+      "risk_category": "财务风险",
+      "risk_description": "根据募集资金投资计划，公司在使用募集资金时会导致固定资产投资、研发费用和销售费用均有所增加。本次募集资金投资项目中，介入类医疗器械研发项目、补充流动资金不能带来直接经济效益，而介入类医疗器械产业化基地建设项目未来实现经济效益仍需要一定的时间。因此，新增的固定资产折旧、研发和销售费用将在未来一段时间持续对公司整体盈利能力造成一定的不利影响。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    },
+    {
+      "risk_title": "募投项目新增产能可能无法被消化的风险",
+      "risk_category": "经营风险",
+      "risk_description": "公司本次介入类医疗器械产业化基地建设项目建成达产后，公司心血管介入创新医疗器械产品产能将进一步扩大，有助于满足公司未来业务增长的需求。虽然公司已对该募投项目进行充分的可行性分析，但其容易受到宏观政策、市场需求变化、公司产品具体销售情况和市场竞争等因素的影响，公司可能面临市场增长不达预期或公司商业化能力不足所导致新增产能无法被市场消化的风险，从而影响公司预期收益的实现。",
+      "severity_level": "中",
+      "source_evidence_id": null
+    }
+  ],
+  "compliance_items": [
+    {
+      "item_type": "关联交易",
+      "counter_party": "泰格捷通（北京）医药科技有限公司",
+      "occurrence_date": "2022-01-01",
+      "amount": {
+        "value": 52.83,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "description": "公司向关联方捷通康诺采购临床研究相关服务，包括临床试验项目稽查、临床试验现场管理（SMO）服务等，2022年交易金额52.83万元，占同期营业成本总额比重1.57%。",
+      "period": "2022-01-01",
+      "source_evidence_id": null
+    },
+    {
+      "item_type": "关联交易",
+      "counter_party": "Rodrigo Montiel Ruiz",
+      "occurrence_date": "2022-01-01",
+      "amount": {
+        "value": 62.4,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "description": "公司向Rodrigo Montiel Ruiz支付顾问费，用于协助公司进行欧洲、拉丁美洲等西语地区的销售推广工作，2022年交易金额62.40万元，占同期营业成本比重1.85%，占销售费用比重0.82%。",
+      "period": "2022-01-01",
+      "source_evidence_id": null
+    },
+    {
+      "item_type": "关联交易",
+      "counter_party": "宋亮、连菲",
+      "occurrence_date": "2020-12-01",
+      "amount": {
+        "value": 30.0,
+        "unit": "万元",
+        "currency": "CNY"
+      },
+      "description": "2020年12月，宋亮、连菲共同设立北芯合创，作为员工持股平台用于实施北芯医疗层面的股权激励。宋亮为执行事务合伙人，宋亮与连菲对北芯合创的认缴出资额分别为0.3万元和29.7万元。同月，北芯生命与北芯合创共同设立北芯医疗，认缴出资额分别为70万元和30万元，持股比例为70%和30%。截至2024年12月31日，北芯合创尚未完成对北芯医疗认缴出资额的实缴。",
+      "period": "2020-01-01",
+      "source_evidence_id": null
+    }
+  ],
   "evidence_index": [
     {
       "evidence_id": "ev_0000",

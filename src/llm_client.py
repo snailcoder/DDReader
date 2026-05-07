@@ -18,6 +18,7 @@ class LLMClient:
         self.api_key = api_key or config.API_KEY
         self.base_url = base_url or config.API_BASE
         self.model = model or config.MODEL_NAME
+        
 
         if not self.api_key:
             raise ValueError("API Key 未设置，请配置环境变量 INTERNLM_API_KEY")
@@ -98,6 +99,7 @@ class AsyncLLMClient:
         self.base_url = base_url or config.API_BASE
         self.model = model or config.MODEL_NAME
 
+        print(f"AsyncLLMClient 初始化, Base URL: {self.base_url}, Model: {self.model}")
         if not self.api_key:
             raise ValueError("API Key 未设置，请配置环境变量 INTERNLM_API_KEY")
 

@@ -50,6 +50,17 @@ export INTERNLM_API_KEY="your-api-key-here"
 python src/run.py --input_dir data/mineru-output/1224957012_3cab4602.pdf-4b9a8df8-3003-4e38-bdeb-b3f983ffd76f --output_dir results/
 ```
 
+### 批量运行（自动遍历子目录）
+
+```bash
+# 直接传入父目录，程序会自动检测并遍历所有子目录
+python src/run.py --input_dir data/mineru-output/ --output_dir results/
+```
+
+程序会自动检测 `--input_dir` 参数：
+- 如果是单个文档目录（包含 `content_list.json` 文件），直接处理该目录
+- 如果是父目录（不包含 `content_list.json` 文件），自动遍历所有子目录并批量处理
+
 ### 批量手动运行（遍历全部文档）
 
 ```bash
