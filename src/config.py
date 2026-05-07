@@ -16,9 +16,9 @@ if _env_path.exists():
 #   --header 'Authorization: Bearer <token>' \
 #   --header 'Content-Type: application/json' \
 #   --data '{"model": "intern-latest", "messages": [...]}'
-API_BASE = "https://chat.intern-ai.org.cn/api/v1"
-API_KEY = os.getenv("INTERNLM_API_KEY", "")
-MODEL_NAME = "intern-latest"
+API_BASE = os.getenv("API_BASE", "https://chat.intern-ai.org.cn/api/v1")
+API_KEY = os.getenv("API_KEY", "")
+MODEL_NAME = os.getenv("MODEL_NAME", "intern-latest")
 MAX_TOKENS = 8192
 TEMPERATURE = 0.1
 REQUEST_TIMEOUT = 120

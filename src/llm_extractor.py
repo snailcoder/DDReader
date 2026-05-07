@@ -255,6 +255,15 @@ class LLMExtractor:
 
         valid_results = [r for r in all_results if not isinstance(r, Exception) and r is not None]
 
+        # 展平嵌套列表（与 _extract_single 保持一致）
+        flattened = []
+        for r in valid_results:
+            if isinstance(r, list):
+                flattened.extend(r)
+            elif isinstance(r, dict):
+                flattened.append(r)
+        valid_results = flattened
+
         if is_object:
             for r in reversed(valid_results):
                 if r and isinstance(r, dict) and any(v not in (None, "", [], {}) for v in r.values()):
