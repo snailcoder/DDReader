@@ -45,8 +45,10 @@ def main():
         os.environ["INTERNLM_API_KEY"] = args.api_key
 
     if args.async_mode:
+        print("使用异步并发模式")
         result = asyncio.run(run_pipeline_async(args.input_dir, args.output_dir))
     else:
+        print("使用同步模式")
         result = run_pipeline(args.input_dir, args.output_dir)
 
     print(f"\n处理完成，document_id={result['document_id']}, document_type={result['document_type']}")

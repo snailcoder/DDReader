@@ -8,9 +8,10 @@
 ├── src/                          # 核心代码
 │   ├── config.py                 # API 配置、Prompt 模板、Schema 定义
 │   ├── utils.py                  # 通用工具（数据加载、金额/日期解析、文本清理等）
+│   ├── preprocessor.py           # 预处理模块（加载 content_list.json，按页合并为 markdown）
 │   ├── document_classifier.py    # 文档分类器（招股说明书 / 提示性公告 / H股公告等）
-│   ├── chapter_parser.py         # 目录恢复 + 章节切分（基于 full.md + content_list_v2.json）
-│   ├── text_extractor.py         # 按章节聚合 paragraph / table / list，保留页码和 bbox 证据
+│   ├── chapter_parser.py         # 目录解析 + 章节切分（大章→小节→子节三级结构）
+│   ├── text_extractor.py         # 按章节聚合文本，保留页码证据
 │   ├── llm_client.py             # InternLM API 客户端（OpenAI SDK 兼容）
 │   ├── llm_extractor.py          # 6 大字段类别的大模型抽取器
 │   ├── post_processor.py         # 金额拆分、日期格式化、比例标准化、基础业务校验
@@ -30,7 +31,7 @@
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install openai
+pip install openai python-dotenv
 ```
 
 ### 2. API Key 配置
@@ -81,40 +82,49 @@ done
 输入：mineru-output 下任一 PDF 解析目录
   │
   ▼
-1. 文档分类器（document_classifier）
-      └── 识别为「招股说明书/提示性公告/H股公告/其他」
+1. 预处理器（preprocessor）
+      └── 加载 *_content_list.json，过滤 image/header/footer/page_number 等无关类型
+          按 page_idx 分组，合并为 markdown 格式（使用 text_level 字段添加标题标记）
   │
   ▼
-2. 章节解析器（chapter_parser）
-      └── 结合 full.md 的 Markdown 标题层级 + content_list_v2.json 的 title block
-          恢复目录树，按大章节切分正文（发行人基本情况、风险因素、财务会计信息、募集资金运用等）
+2. 文档分类器（document_classifier）
+      └── 基于第一页内容识别文档类型
+          识别为「招股说明书/提示性公告/H股公告/其他」
   │
   ▼
-3. 文本提取器（text_extractor）
-      └── 对每个章节，聚合对应的 paragraph / table / list block
-          保留表格 HTML、段落文本、脚注，同时记录 page_no / bbox 作为证据
+3. 章节解析器（chapter_parser）
+      └── 解析目录：从预处理结果中找到目录页，提取大章标题和页码
+          切分大章：按目录中的页码切分
+          切分小节：页面分裂 + 页面重组
+          切分子节：正则识别（一）（二）等子节标题（可选）
+          输出三级结构：大章 → 小节 → 子节
   │
   ▼
-4. 大模型字段抽取器（llm_extractor）
+4. 文本提取器（text_extractor）
+      └── 对每个章节，聚合对应的文本内容
+          保留表格 HTML、段落文本，同时记录 page_idx 作为证据
+  │
+  ▼
+5. 大模型字段抽取器（llm_extractor）
       └── 调用 InternLM API，按 6 大字段类别分批次/分章节调用：
-          - 发行人基础信息（概览章节）
-          - 股权与控制关系（股本股东章节）
-          - 财务指标（财务会计章节）
-          - 募投项目（募集资金章节）
+          - 发行人基础信息（概览、发行人基本情况章节）
+          - 股权与控制关系（发行人基本情况、公司治理章节）
+          - 财务指标（财务会计信息、业务与技术章节）
+          - 募投项目（募集资金运用章节）
           - 风险事项（风险因素章节）
-          - 合规事项（治理/法律章节）
+          - 合规事项（其他重要事项、公司治理章节）
   │
   ▼
-5. 后处理器（post_processor）
-      └── 金额标准化："46,565.64 万元" → {"amount": 46565.64, "unit": "万元", "currency": "CNY"}
+6. 后处理器（post_processor）
+      └── 金额标准化："46,565.64 万元" → {"value": 46565.64, "unit": "万元", "currency": "CNY"}
           日期格式化：YYYY-MM-DD
           比例标准化：小数表示
           基础校验：募投金额汇总一致性、控股股东持股比例合法性、发行人名称非空等
   │
   ▼
-6. 证据索引构建器（evidence_builder）
+7. 证据索引构建器（evidence_builder）
       └── 为每个抽取字段匹配 source_evidence_id
-          关联到 evidence_index 中的 page_no / chapter / quote / bbox
+          关联到 evidence_index 中的 page_no / chapter / quote
   │
   ▼
 输出：{doc_id}.json（符合 schema.json 的结构化结果）
@@ -124,24 +134,72 @@ done
 
 | 问题 | 决策 |
 |------|------|
-| **数据源** | 同时使用 `full.md`（Markdown 标题层级、HTML 表格）和 `content_list_v2.json`（block 类型、页码、bbox） |
-| **章节切分** | 双源融合：正则提取 `# 第X节 标题` 构建目录树，再用 `content_list_v2` 的 `title` block 校正层级和页码 |
-| **页码恢复** | `content_list_v2.json` 的外层列表索引 ≈ 页码（mineru 按页输出），block 的 `bbox` 保留原始坐标 |
+| **数据源** | 使用 `*_content_list.json`（mineru 解析的 block 列表），按页合并为 markdown 格式 |
+| **预处理** | 过滤 image/header/footer/page_number 等无关类型，使用 text_level 字段区分标题层级 |
+| **目录解析** | 从预处理结果中找到目录页，用正则匹配 `第X节 标题...页码` 格式提取大章信息 |
+| **章节切分** | 三级结构：大章（按目录页码切分）→ 小节（页面分裂+页面重组）→ 子节（正则识别） |
+| **页面分裂** | 对每个页面，根据目录中的小节标题位置，将页面分裂为多个片段 |
+| **页面重组** | 遍历分裂后的片段，按二级标题重组为小节 |
 | **表格处理** | 保留 HTML `<table>` 原样送入大模型，比纯文本更易让模型理解行列关系 |
-| **大模型调用** | 使用 InternLM API（OpenAI-compatible 接口），模型 `internlm2.5-latest` |
+| **大模型调用** | 使用 InternLM API（OpenAI-compatible 接口），模型 `intern-latest` |
 | **抽取策略** | 分章节独立调用，每次 Prompt 只聚焦 1~2 个字段类别，降低幻觉和超长上下文压力 |
-| **证据索引** | 每个抽取字段携带 `source_evidence_id`，指向 `evidence_index` 中的 `page_no` / `chapter` / `quote` / `bbox` |
+| **证据索引** | 每个抽取字段携带 `source_evidence_id`，指向 `evidence_index` 中的 `page_no` / `chapter` / `quote` |
+
+## 数据格式说明
+
+### content_list.json 格式
+
+mineru 解析输出的 `*_content_list.json` 是一个一维列表，每个元素代表文档中的一行/一块内容：
+
+```json
+{
+    "type": "text",           // 类型：text/image/header/page_number/table 等
+    "text": "文本内容",        // 文本内容
+    "text_level": 1,          // 标题层级（1=一级标题，2=二级标题，无则为正文）
+    "bbox": [x1, y1, x2, y2], // 边界框坐标
+    "page_idx": 0             // 页码（从0开始）
+}
+```
+
+### 章节结构
+
+解析后的章节结构为三级嵌套：
+
+```json
+{
+    "chapters": [
+        {
+            "heading": "第八节 财务会计信息与管理层分析",
+            "page_idx": 264,
+            "sections": [
+                {
+                    "heading": "一、财务报表",
+                    "page_idx": 264,
+                    "text_list": [{"text": "...", "page_idx": 264}],
+                    "subsections": [
+                        {
+                            "heading": "（一）合并资产负债表",
+                            "page_idx": 264,
+                            "text_list": [{"text": "...", "page_idx": 264}]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
 
 ## 注意事项
 
 1. **API 调用费用**：每份完整招股说明书大约需要 6~10 次 LLM API 调用（6 个字段类别 × 1~2 个文本 chunk），请确保 API 余额充足。
-2. **文本长度限制**：单条 Prompt 文本长度限制在 6000 字符左右，超长章节会自动切分，分别调用后合并结果。
+2. **文本长度限制**：单条 Prompt 文本长度限制在 120000 字符左右，超长章节会自动切分，分别调用后合并结果。
 3. **准确率**：当前版本采用"规则切分 + 大模型抽取"的两阶段策略，对格式规范的文档效果较好；对跨页表格、复杂财务附注等难点，仍需人工复核。
 4. **扩展**：如需接入其他模型，只需在 `llm_client.py` 中替换 `OpenAI` 客户端即可，上层接口保持不变。
 
 ## 参考文档
 
-- 抽取任务设计文档：`docs/DDReader.wiki/extactor_docs.md`
-- 赛题详细描述：`赛题详细描述.md`
+- 抽取方法设计文档：`docs/DDReader.wiki/抽取方法.md`
+- 字段分布概况：`docs/DDReader.wiki/字段分布概况.md`
 - 输出数据结构定义：`schema.json`
 - InternLM API 文档：https://internlm.intern-ai.org.cn/api/document

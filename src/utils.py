@@ -39,6 +39,43 @@ def load_mineru_data(input_dir: str) -> Dict[str, Any]:
     return data
 
 
+def infer_exchange_and_board_from_text(text: str) -> Tuple[Optional[str], Optional[str]]:
+    """从文本中推断交易所和板块（新版，支持从预处理后的文本推断）
+
+    Args:
+        text: 文本内容（通常取前5000字符）
+
+    Returns:
+        (exchange, board)
+    """
+    text_upper = text[:5000].upper()
+
+    exchange = None
+    board = None
+
+    if "科创板" in text_upper or "上海证券交易所科创板" in text_upper:
+        exchange = "上交所"
+        board = "科创板"
+    elif "创业板" in text_upper or "深圳证券交易所创业板" in text_upper:
+        exchange = "深交所"
+        board = "创业板"
+    elif "主板" in text_upper:
+        if "上海" in text_upper[:2000]:
+            exchange = "上交所"
+        else:
+            exchange = "深交所"
+        board = "主板"
+    elif "北交所" in text_upper or "北京证券交易所" in text_upper:
+        exchange = "北交所"
+        board = "北交所"
+    elif "上交所" in text_upper or "上海证券交易所" in text_upper:
+        exchange = "上交所"
+    elif "深交所" in text_upper or "深圳证券交易所" in text_upper:
+        exchange = "深交所"
+
+    return exchange, board
+
+
 def parse_amount(text: str) -> Optional[Dict[str, Any]]:
     """从文本中解析金额，拆分为 value / unit / currency
 

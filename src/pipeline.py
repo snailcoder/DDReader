@@ -1,14 +1,24 @@
-"""主 Pipeline：串联全部步骤，生成最终 JSON"""
+"""主 Pipeline：串联全部步骤，生成最终 JSON
+
+新流程：
+1. 预处理：加载 content_list.json，按页合并为 markdown
+2. 文档分类：基于第一页内容
+3. 章节解析：解析目录，切分大章→小节→子节
+4. 文本提取：按章节聚合文本
+5. LLM 抽取：调用大模型抽取 6 类字段
+6. 后处理：金额/日期/比例标准化
+7. 证据索引：构建证据索引
+"""
 
 import asyncio
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from . import config, utils
-from .chapter_parser import parse_toc_and_chapters, get_chapter_text
-from .document_classifier import classify_document, should_skip
+from .chapter_parser import parse_chapters, get_section_text
+from .document_classifier import classify_document_from_preprocessed, should_skip
 from .evidence_builder import build_evidence_index, attach_evidence_ids
 from .llm_extractor import LLMExtractor
 from .post_processor import (
@@ -20,34 +30,37 @@ from .post_processor import (
     process_risk_items,
     validate_result,
 )
-from .text_extractor import extract_chapter_blocks, build_chapter_text_with_evidence
+from .preprocessor import preprocess, get_first_page_text, get_total_pages
+from .text_extractor import extract_chapter_texts
 
 
-def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor: Optional[LLMExtractor] = None) -> Dict[str, Any]:
+def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
+                 llm_extractor: Optional[LLMExtractor] = None,
+                 split_subsection_method: str = "regex") -> Dict[str, Any]:
     """端到端 Pipeline 主入口
 
     Args:
         input_dir: mineru 解析输出目录
         output_dir: 结果输出目录，为 None 则不保存文件
         llm_extractor: 可注入自定义 LLMExtractor（用于测试）
+        split_subsection_method: 子节切分方法，"regex" 或 "model"
 
     Returns:
         符合 schema 的结构化结果字典
     """
     print(f"[Pipeline] 开始处理: {input_dir}")
 
-    # 1. 加载数据
-    mineru_data = utils.load_mineru_data(input_dir)
-    md_text = mineru_data["full_md"]
-    content_list_v2 = mineru_data["content_list_v2"]
-
-    if not md_text:
-        print("[Pipeline] 警告: full.md 为空")
+    # 1. 预处理
+    print("[Pipeline] 预处理 content_list.json...")
+    preprocessed = preprocess(input_dir)
+    total_pages = get_total_pages(preprocessed)
+    print(f"[Pipeline] 预处理完成，共 {total_pages} 页")
 
     doc_id = utils.build_document_id_from_dir(input_dir)
 
     # 2. 文档分类
-    doc_type, confidence = classify_document(md_text)
+    first_page_text = get_first_page_text(preprocessed)
+    doc_type, confidence = classify_document_from_preprocessed(preprocessed)
     print(f"[Pipeline] 文档类型识别: {doc_type} (置信度: {confidence:.2f})")
 
     # 初始化骨架
@@ -55,8 +68,8 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
     result["document_id"] = doc_id
     result["document_type"] = doc_type
 
-    # 推断交易所和板块（从全文前5000字）
-    exchange, board = utils.infer_exchange_and_board(md_text)
+    # 推断交易所和板块
+    exchange, board = utils.infer_exchange_and_board_from_text(first_page_text)
     if exchange:
         result["issuer_profile"]["exchange"] = exchange
     if board:
@@ -71,28 +84,24 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
 
     # 4. 解析目录与章节
     print("[Pipeline] 解析章节结构...")
-    parsed = parse_toc_and_chapters(md_text, content_list_v2)
-    categories = list(parsed["chapters"].keys())
-    print(f"[Pipeline] 识别到章节类别: {categories}")
+    parsed = parse_chapters(preprocessed, split_subsection_method)
+    chapters = parsed.get("chapters", [])
+    print(f"[Pipeline] 识别到 {len(chapters)} 个大章")
 
-    # 5. 提取章节 block 证据
-    print("[Pipeline] 提取章节 block 证据...")
-    chapter_blocks = extract_chapter_blocks(content_list_v2, parsed)
+    for ch in chapters:
+        sections = ch.get("sections", [])
+        print(f"  - {ch['heading']}: {len(sections)} 个小节")
 
-    # 6. 为每个类别构建文本 + 证据
-    chapter_texts = {}
-    chapter_evidence = {}
-    for cat, blocks in chapter_blocks.items():
-        text, evidence_list = build_chapter_text_with_evidence(blocks, max_chars=15000)
-        chapter_texts[cat] = text
-        chapter_evidence[cat] = evidence_list
+    # 5. 提取章节文本
+    print("[Pipeline] 提取章节文本...")
+    chapter_texts = extract_chapter_texts(parsed)
 
-    # 7. 大模型字段抽取
+    # 6. 大模型字段抽取
     print("[Pipeline] 调用大模型抽取字段...")
     extractor = llm_extractor or LLMExtractor()
-    extracted = extractor.extract_all(chapter_texts)
+    extracted, evidence_map = extractor.extract_all(chapter_texts)
 
-    # 7.5 打印抽取结果摘要
+    # 打印抽取结果摘要
     issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
     financials_count = len(extracted.get("financials", []) or [])
     projects_count = len(extracted.get("fund_raising_projects", []) or [])
@@ -107,7 +116,7 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
         f"合规事项={compliance_count}条"
     )
 
-    # 8. 后处理
+    # 7. 后处理
     print("[Pipeline] 后处理抽取结果...")
     result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
     result["ownership_structure"] = process_ownership_structure(extracted.get("ownership_structure"))
@@ -116,11 +125,28 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
     result["risk_items"] = process_risk_items(extracted.get("risk_items"))
     result["compliance_items"] = process_compliance_items(extracted.get("compliance_items"))
 
-    # 9. 构建证据索引并关联
+    # 8. 构建证据索引
     print("[Pipeline] 构建证据索引...")
-    evidence_index = build_evidence_index(chapter_blocks)
+    evidence_index = []
+    evidence_counter = 0
+
+    for chapter_name, chapter_info in chapter_texts.items():
+        for evidence in chapter_info.get("evidence", []):
+            evidence_id = f"ev_{evidence_counter:04d}"
+            evidence_index.append({
+                "evidence_id": evidence_id,
+                "page_no": evidence.get("page_idx", 0),
+                "chapter": chapter_name,
+                "block_type": evidence.get("block_type", "text"),
+                "quote": evidence.get("text", "")[:300],
+                "bbox": [],
+            })
+            evidence_counter += 1
+
     result["evidence_index"] = evidence_index
-    result = attach_evidence_ids(result, chapter_blocks)
+
+    # 9. 关联证据 ID
+    _attach_evidence_ids(result, chapter_texts, evidence_map)
 
     # 10. 基础校验
     print("[Pipeline] 运行基础校验...")
@@ -137,6 +163,39 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None, llm_extractor
     return result
 
 
+def _attach_evidence_ids(result: Dict[str, Any], chapter_texts: Dict[str, Dict],
+                         evidence_map: Dict[str, list]) -> None:
+    """为抽取结果关联证据 ID"""
+    # 简单实现：为每个字段类别关联第一个相关证据
+    evidence_index = result.get("evidence_index", [])
+
+    # 创建章节名到证据ID列表的映射
+    chapter_to_evidence = {}
+    for ev in evidence_index:
+        chapter = ev.get("chapter", "")
+        if chapter not in chapter_to_evidence:
+            chapter_to_evidence[chapter] = []
+        chapter_to_evidence[chapter].append(ev.get("evidence_id"))
+
+    # 为 issuer_profile 关联证据
+    if result.get("issuer_profile"):
+        for chapter_name in chapter_texts:
+            if any(kw in chapter_name for kw in ["发行人基本情况", "概览"]):
+                evidence_ids = chapter_to_evidence.get(chapter_name, [])
+                if evidence_ids:
+                    result["issuer_profile"]["source_evidence_id"] = evidence_ids[0]
+                    break
+
+    # 为 ownership_structure 关联证据
+    if result.get("ownership_structure"):
+        for chapter_name in chapter_texts:
+            if any(kw in chapter_name for kw in ["发行人基本情况", "公司治理"]):
+                evidence_ids = chapter_to_evidence.get(chapter_name, [])
+                if evidence_ids:
+                    result["ownership_structure"]["source_evidence_id"] = evidence_ids[0]
+                    break
+
+
 def _save_result(result: Dict[str, Any], output_dir: str, doc_id: str) -> None:
     """保存结果为 JSON 文件"""
     out_path = Path(output_dir)
@@ -147,58 +206,65 @@ def _save_result(result: Dict[str, Any], output_dir: str, doc_id: str) -> None:
     print(f"[Pipeline] 结果已保存: {file_path}")
 
 
-async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None, llm_extractor: Optional[LLMExtractor] = None) -> Dict[str, Any]:
+async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
+                             llm_extractor: Optional[LLMExtractor] = None,
+                             split_subsection_method: str = "regex") -> Dict[str, Any]:
     """端到端 Pipeline 主入口（异步并发版本）"""
 
     print(f"[Pipeline] 开始处理: {input_dir}")
 
-    mineru_data = utils.load_mineru_data(input_dir)
-    md_text = mineru_data["full_md"]
-    content_list_v2 = mineru_data["content_list_v2"]
-
-    if not md_text:
-        print("[Pipeline] 警告: full.md 为空")
+    # 1. 预处理
+    print("[Pipeline] 预处理 content_list.json...")
+    preprocessed = preprocess(input_dir)
+    total_pages = get_total_pages(preprocessed)
+    print(f"[Pipeline] 预处理完成，共 {total_pages} 页")
 
     doc_id = utils.build_document_id_from_dir(input_dir)
 
-    doc_type, confidence = classify_document(md_text)
+    # 2. 文档分类
+    first_page_text = get_first_page_text(preprocessed)
+    doc_type, confidence = classify_document_from_preprocessed(preprocessed)
     print(f"[Pipeline] 文档类型识别: {doc_type} (置信度: {confidence:.2f})")
 
+    # 初始化骨架
     result = dict(config.EMPTY_SKELETON)
     result["document_id"] = doc_id
     result["document_type"] = doc_type
 
-    exchange, board = utils.infer_exchange_and_board(md_text)
+    # 推断交易所和板块
+    exchange, board = utils.infer_exchange_and_board_from_text(first_page_text)
     if exchange:
         result["issuer_profile"]["exchange"] = exchange
     if board:
         result["issuer_profile"]["board"] = board
 
+    # 3. 如果是提示性公告等，直接返回骨架
     if should_skip(doc_type):
         print(f"[Pipeline] 文档类型为 {doc_type}，跳过抽取，输出骨架 JSON")
         if output_dir:
             _save_result(result, output_dir, doc_id)
         return result
 
+    # 4. 解析目录与章节
     print("[Pipeline] 解析章节结构...")
-    parsed = parse_toc_and_chapters(md_text, content_list_v2)
-    categories = list(parsed["chapters"].keys())
-    print(f"[Pipeline] 识别到章节类别: {categories}")
+    parsed = parse_chapters(preprocessed, split_subsection_method)
+    chapters = parsed.get("chapters", [])
+    print(f"[Pipeline] 识别到 {len(chapters)} 个大章")
 
-    print("[Pipeline] 提取章节 block 证据...")
-    chapter_blocks = extract_chapter_blocks(content_list_v2, parsed)
+    for ch in chapters:
+        sections = ch.get("sections", [])
+        print(f"  - {ch['heading']}: {len(sections)} 个小节")
 
-    chapter_texts = {}
-    chapter_evidence = {}
-    for cat, blocks in chapter_blocks.items():
-        text, evidence_list = build_chapter_text_with_evidence(blocks, max_chars=15000)
-        chapter_texts[cat] = text
-        chapter_evidence[cat] = evidence_list
+    # 5. 提取章节文本
+    print("[Pipeline] 提取章节文本...")
+    chapter_texts = extract_chapter_texts(parsed)
 
+    # 6. 大模型字段抽取（异步并发）
     print("[Pipeline] 调用大模型抽取字段（异步并发）...")
     extractor = llm_extractor or LLMExtractor()
-    extracted = await extractor.extract_all_async(chapter_texts)
+    extracted, evidence_map = await extractor.extract_all_async(chapter_texts)
 
+    # 打印抽取结果摘要
     issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
     financials_count = len(extracted.get("financials", []) or [])
     projects_count = len(extracted.get("fund_raising_projects", []) or [])
@@ -213,6 +279,7 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None, l
         f"合规事项={compliance_count}条"
     )
 
+    # 7. 后处理
     print("[Pipeline] 后处理抽取结果...")
     result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
     result["ownership_structure"] = process_ownership_structure(extracted.get("ownership_structure"))
@@ -221,18 +288,37 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None, l
     result["risk_items"] = process_risk_items(extracted.get("risk_items"))
     result["compliance_items"] = process_compliance_items(extracted.get("compliance_items"))
 
+    # 8. 构建证据索引
     print("[Pipeline] 构建证据索引...")
-    # 9. 构建证据索引并关联
-    evidence_index = build_evidence_index(chapter_blocks)
-    result["evidence_index"] = evidence_index
-    result = attach_evidence_ids(result, chapter_blocks)
+    evidence_index = []
+    evidence_counter = 0
 
+    for chapter_name, chapter_info in chapter_texts.items():
+        for evidence in chapter_info.get("evidence", []):
+            evidence_id = f"ev_{evidence_counter:04d}"
+            evidence_index.append({
+                "evidence_id": evidence_id,
+                "page_no": evidence.get("page_idx", 0),
+                "chapter": chapter_name,
+                "block_type": evidence.get("block_type", "text"),
+                "quote": evidence.get("text", "")[:300],
+                "bbox": [],
+            })
+            evidence_counter += 1
+
+    result["evidence_index"] = evidence_index
+
+    # 9. 关联证据 ID
+    _attach_evidence_ids(result, chapter_texts, evidence_map)
+
+    # 10. 基础校验
     print("[Pipeline] 运行基础校验...")
     warnings = validate_result(result)
     if warnings:
         for w in warnings:
             print(f"[Pipeline] 校验警告: {w}")
 
+    # 11. 保存结果
     if output_dir:
         _save_result(result, output_dir, doc_id)
 
