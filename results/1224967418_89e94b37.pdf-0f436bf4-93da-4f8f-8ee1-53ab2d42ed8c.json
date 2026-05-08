@@ -1,12 +1,12 @@
 {
-  "document_id": "1224957531_7e414532.pdf-6fd6a478-5b9c-499f-8013-172224a6396f",
-  "document_type": "H股公告",
+  "document_id": "1224967418_89e94b37.pdf-0f436bf4-93da-4f8f-8ee1-53ab2d42ed8c",
+  "document_type": "提示性公告",
   "issuer_profile": {
     "issuer_name": null,
     "issuer_name_normalized": null,
     "stock_code": null,
-    "exchange": null,
-    "board": null,
+    "exchange": "上交所",
+    "board": "主板",
     "legal_representative": null,
     "establishment_date": null,
     "registered_capital": {

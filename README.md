@@ -50,6 +50,17 @@ export INTERNLM_API_KEY="your-api-key-here"
 python src/run.py --input_dir data/mineru-output/1224957012_3cab4602.pdf-4b9a8df8-3003-4e38-bdeb-b3f983ffd76f --output_dir results/
 ```
 
+### 批量运行（自动遍历子目录）
+
+```bash
+# 直接传入父目录，程序会自动检测并遍历所有子目录
+python src/run.py --input_dir data/mineru-output/ --output_dir results/
+```
+
+程序会自动检测 `--input_dir` 参数：
+- 如果是单个文档目录（包含 `content_list.json` 文件），直接处理该目录
+- 如果是父目录（不包含 `content_list.json` 文件），自动遍历所有子目录并批量处理
+
 ### 批量手动运行（遍历全部文档）
 
 ```bash
@@ -196,6 +207,24 @@ mineru 解析输出的 `*_content_list.json` 是一个一维列表，每个元�
 2. **文本长度限制**：单条 Prompt 文本长度限制在 120000 字符左右，超长章节会自动切分，分别调用后合并结果。
 3. **准确率**：当前版本采用"规则切分 + 大模型抽取"的两阶段策略，对格式规范的文档效果较好；对跨页表格、复杂财务附注等难点，仍需人工复核。
 4. **扩展**：如需接入其他模型，只需在 `llm_client.py` 中替换 `OpenAI` 客户端即可，上层接口保持不变。
+
+## 更新日志
+
+### 2026-05-07
+
+#### 新增功能
+- **预处理模块** (`src/preprocessor.py`)：新增独立的预处理模块，自动加载 `*_content_list.json`，过滤无关类型，按页合并为 markdown 格式
+- **三级章节结构**：支持大章 → 小节 → 子节的三级切分，使用页面分裂+页面重组算法
+- **子节识别**：支持正则识别（一）（二）等格式的子节标题
+
+#### 重构
+- **数据源变更**：从 `full.md` + `content_list_v2.json` 改为只使用 `*_content_list.json`
+- **目录解析**：优化目录解析逻辑，支持 `第X节 标题...页码` 格式
+- **章节切分**：重写 `chapter_parser.py`，实现三级结构切分
+- **文档分类**：改为基于第一页内容进行分类
+
+#### Bug 修复
+- **`_extract_async` 函数**：修复异步抽取时列表型结果未展平的 bug，导致 `financials`、`fund_raising_projects`、`risk_items`、`compliance_items` 等列表型字段在异步模式下结果丢失
 
 ## 参考文档
 
