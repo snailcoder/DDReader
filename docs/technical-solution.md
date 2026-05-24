@@ -302,6 +302,8 @@ src/
 ├── llm_extractor.py      # 字段抽取器
 ├── post_processor.py     # 后处理
 ├── evidence_builder.py   # 证据索引
+├── static/
+│   └── index.html        # Web 前端页面
 └── utils.py              # 通用工具
 ```
 
@@ -323,14 +325,20 @@ src/
    python src/run.py --input_dir data/mineru-output/ --output_dir results/
    ```
 
-3. **API 服务器**（推荐）：
+3. **API 服务器 + Web 前端**（推荐）：
    ```bash
    # Terminal 1: mineru 解析服务
    mineru-api --host 127.0.0.1 --port 8000
    
    # Terminal 2: 抽取 API
    uvicorn src.api:app --host 0.0.0.0 --port 8001
+   
+   # 浏览器打开 http://localhost:8001
    ```
+   
+   Web 前端支持：
+   - 拖拽上传 PDF（走 mineru 解析）或 `*_content_list.json`（跳过 mineru 直接抽取）
+   - 异步任务轮询，完成后以标签页形式展示 6 类字段 + 证据索引
 
 ### 3.6 环境依赖
 

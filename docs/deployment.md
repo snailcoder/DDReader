@@ -1,5 +1,19 @@
 # 金融长文档字段抽取 Pipeline —— 部署手册
 
+## 快速部署检查清单
+
+- [ ] Python 3.10+ 已安装
+- [ ] `python3 -m venv .venv` 虚拟环境已创建
+- [ ] `source .venv/bin/activate` 已激活
+- [ ] `pip install openai python-dotenv` 已完成
+- [ ] `uv pip install -U "mineru[all]"` mineru 已安装
+- [ ] 或 `docker compose --profile full up -d` Docker 部署就绪
+- [ ] `.env` 文件中已配置有效的 API Key
+- [ ] `python src/run.py --input_dir data/mineru-output/<id> --output_dir results/` CLI 模式验证通过
+- [ ] （可选）`mineru-api --host 127.0.0.1 --port 8000` 解析服务已启动
+- [ ] （可选）`uvicorn src.api:app --host 0.0.0.0 --port 8001` API 服务已启动
+- [ ] `curl http://localhost:8001/health` 健康检查通过
+
 ## 一、系统架构
 
 ```
@@ -84,7 +98,7 @@ pip install fastapi uvicorn httpx python-multipart
 
 ### 3.6 配置 API Key
 
-创建或编辑项目根目录下的 `.env` 文件：
+创建或编辑项目根目录下的 `.env` 文件（参考 `.env.example`）：
 
 ```ini
 # DeepSeek（当前配置）
@@ -104,6 +118,20 @@ MODEL_NAME=deepseek-chat
 export API_KEY="sk-..."
 export API_BASE="https://api.deepseek.com"
 export MODEL_NAME="deepseek-chat"
+```
+
+### 3.7 Docker 部署（可选）
+
+```bash
+# 1. 编辑配置
+cp .env.example .env
+# 编辑 .env 填入 API_KEY
+
+# 2. 启动完整服务（含 mineru-api）
+docker compose --profile full up -d
+
+# 3. 仅启动 DrDD API（需自行启动 mineru-api）
+docker compose up -d drdd-api
 ```
 
 ---
@@ -160,8 +188,6 @@ python src/run.py \
 
 ## 五、API 模式部署
 
-> ⚠️ `src/api.py` 需要创建。以下为规划的 API 接口，参考 `prd/delivery.md` 实现。
-
 ### 5.1 启动 mineru 解析服务
 
 mineru 内置 FastAPI 服务，作为 PDF 解析的独立后端：
@@ -185,6 +211,14 @@ export MINERU_API_ENABLE_FASTAPI_DOCS=true
 
 ### 5.2 启动 DrDD API 服务
 
+**方式一：Docker（推荐）**
+
+```bash
+docker compose up -d drdd-api
+```
+
+**方式二：本地 Python 直接启动**
+
 ```bash
 uvicorn src.api:app --host 0.0.0.0 --port 8001 --workers 2
 ```
@@ -195,7 +229,28 @@ uvicorn src.api:app --host 0.0.0.0 --port 8001 --workers 2
 uvicorn src.api:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-### 5.3 验证部署
+DrDD API 环境变量：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `MINERU_API_URL` | `http://127.0.0.1:8000` | mineru-api 服务地址 |
+| `MINERU_PARSE_BACKEND` | `pipeline` | mineru 解析后端（`pipeline` / `vlm` / `hybrid`） |
+| `DRDD_BASE_DIR` | `系统临时目录/drdd` | 数据根目录（任务数据、工作目录） |
+| `DRDD_TASKS_DIR` | `{DRDD_BASE_DIR}/tasks` | 任务元数据和结果持久化目录 |
+
+### 5.3 访问 Web 前端
+
+启动后打开 `http://localhost:8001` 即可访问前端页面：
+- 上传 PDF → mineru 解析 → 字段抽取 → 结构化展示
+- 上传 `*_content_list.json` → 跳过 mineru → 直接字段抽取（适用于已有解析结果的文档）
+
+### 5.5 部署验证脚本
+
+```bash
+bash scripts/verify_deployment.sh
+```
+
+脚本自动检查：Python 版本、依赖、API Key 配置、mineru-api 连通性、DrDD API 健康状态，并提交示例 JSON 进行端到端验证。
 
 ```bash
 # 健康检查
@@ -295,6 +350,10 @@ cat result.json
 | `API_BASE` | `https://chat.intern-ai.org.cn/api/v1` | LLM API 地址 |
 | `MODEL_NAME` | `intern-latest` | 模型名称 |
 | `API_BASE`（从 `.env` 读取） | — | 通过 `dotenv` 自动加载 |
+| `MINERU_API_URL` | `http://127.0.0.1:8000` | mineru-api 服务地址（DrDD API 使用） |
+| `MINERU_PARSE_BACKEND` | `pipeline` | mineru 解析后端（DrDD API 使用） |
+| `DRDD_BASE_DIR` | `系统临时目录/drdd` | DrDD 数据根目录（任务、工作数据） |
+| `DRDD_TASKS_DIR` | `{DRDD_BASE_DIR}/tasks` | 任务元数据和结果的持久化目录 |
 | `MINERU_API_TASK_RETENTION_SECONDS` | `86400` | mineru-api 任务保留时间 |
 | `MINERU_API_ENABLE_FASTAPI_DOCS` | `true` | 是否启用 mineru API 文档 |
 
@@ -327,7 +386,9 @@ tmux new -s drdd     # Terminal 2: DrDD API
 
 ### 8.3 临时文件
 
-- DrDD API 处理的上传文件临时存储在 `/tmp/drdd-uploads/`（可配置）
+- DrDD API 数据存储在 `DRDD_BASE_DIR`（默认系统临时目录 `/tmp/drdd/`），包含：
+  - `work/` — 处理中的任务文件（任务完成后自动清理）
+  - `tasks/` — 已完成任务的元数据与结果 JSON（长期保留）
 - mineru-api 处理结果存储在 `./output` 目录（默认 24 小时后自动清理）
 
 ### 8.4 资源监控
@@ -395,16 +456,3 @@ mineru -p <pdf> -o <out> -b hybrid-auto-engine
 mineru 会自动检测并启用 MLX 后端。
 
 ---
-
-## 十、快速部署检查清单
-
-- [ ] Python 3.10+ 已安装
-- [ ] `python3 -m venv .venv` 虚拟环境已创建
-- [ ] `source .venv/bin/activate` 已激活
-- [ ] `pip install openai python-dotenv` 已完成
-- [ ] `uv pip install -U "mineru[all]"` mineru 已安装
-- [ ] `.env` 文件中已配置有效的 API Key
-- [ ] `python src/run.py --input_dir data/mineru-output/<id> --output_dir results/` CLI 模式验证通过
-- [ ] （可选）`mineru-api --host 127.0.0.1 --port 8000` 解析服务已启动
-- [ ] （可选）`uvicorn src.api:app --host 0.0.0.0 --port 8001` API 服务已启动
-- [ ] `curl http://localhost:8001/health` 健康检查通过

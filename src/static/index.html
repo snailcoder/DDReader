@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DrDD 金融文档字段抽取</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;background:#f5f7fa;color:#1f2937;min-height:100vh}
+.header{background:linear-gradient(135deg,#1e3a5f 0,#2d5a87 100%);color:#fff;padding:24px 32px;box-shadow:0 2px 8px rgba(0,0,0,.15)}.header h1{font-size:22px;font-weight:600}.header p{font-size:13px;opacity:.8;margin-top:4px}
+.container{max-width:960px;margin:0 auto;padding:24px 16px}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:24px;margin-bottom:20px}
+.drop-zone{border:2px dashed #cbd5e1;border-radius:10px;padding:48px 24px;text-align:center;cursor:pointer;transition:.2s;background:#fafbfc}.drop-zone:hover,.drop-zone.dragover{border-color:#2d5a87;background:#eef3f8}.drop-zone-icon{font-size:48px;color:#94a3b8;margin-bottom:12px}.drop-zone-text{font-size:16px;color:#475569}.drop-zone-hint{font-size:13px;color:#94a3b8;margin-top:8px}.drop-zone input{display:none}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500}.badge-pdf{background:#fee2e2;color:#991b1b}.badge-json{background:#dbeafe;color:#1e40af}
+.status-box{padding:20px;border-radius:8px;text-align:center}.status-processing{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}.status-done{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}.status-failed{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid #bfdbfe;border-top-color:#1e40af;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-text{font-size:15px;font-weight:500;margin-bottom:4px}
+.task-id{font-size:12px;color:#64748b;word-break:break-all;margin-top:8px}
+.error-detail{font-size:14px;margin-top:12px;padding:12px;background:#fef2f2;border-radius:6px;text-align:left;color:#991b1b}
+
+.tabs{display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:20px;overflow-x:auto}
+.tab{padding:10px 18px;font-size:14px;font-weight:500;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s}.tab:hover{color:#1e3a5f}.tab.active{color:#1e3a5f;border-bottom-color:#1e3a5f}
+
+.section-title{font-size:18px;font-weight:600;margin-bottom:16px;color:#1e3a5f;display:flex;align-items:center;gap:8px}
+.fields-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.field-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px}.field-card .label{font-size:12px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}.field-card .value{font-size:15px;color:#1f2937;font-weight:500;word-break:break-all}.field-card .value.null{color:#94a3b8;font-style:italic}.field-card .value.boolean{font-weight:600}
+table.data-table{width:100%;border-collapse:collapse;font-size:14px}table.data-table th{background:#f1f5f9;text-align:left;padding:10px 12px;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0}table.data-table td{padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#1f2937}.null{color:#94a3b8;font-style:italic}
+tr:hover td{background:#f8fafc}
+
+.item-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:10px}.item-card .item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}.item-card .item-title{font-size:15px;font-weight:600}.item-card .item-meta{font-size:13px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap}.item-card .item-desc{font-size:14px;color:#1f2937;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0}
+.severity-high{background:#fef2f2;color:#991b1b;border-color:#fecaca}.severity-medium{background:#fffbeb;color:#92400e;border-color:#fde68a}.severity-low{background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+.evidence-list{font-size:13px;color:#64748b;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0}
+
+.upload-actions{margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hidden{display:none!important}
+.btn-sm{padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#475569;transition:.15s}.btn-sm:hover{background:#f1f5f9}.btn-sm-primary{border-color:#bfdbfe;color:#1e40af}.btn-sm-primary:hover{background:#eff6ff}.op-btn{display:inline-flex;gap:6px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DrDD 金融文档字段抽取</h1>
+  <p>上传 PDF 或 mineru 解析后的 content_list.json，自动提取结构化字段</p>
+</div>
+
+<div class="container">
+
+  <!-- History -->
+  <details id="historyPanel" class="card" style="padding:12px 20px" open>
+    <summary style="cursor:pointer;font-weight:600;font-size:15px;color:#1e3a5f;user-select:none">
+      历史任务 <span id="historyCount" style="font-weight:400;color:#64748b;font-size:13px">(0)</span>
+    </summary>
+    <div id="historyTableContainer" style="margin-top:10px">
+      <table class="data-table" style="font-size:13px">
+        <thead><tr><th>文件名</th><th>文档类型</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div id="historyEmpty" style="text-align:center;padding:24px;color:#94a3b8;font-size:14px">暂无历史任务</div>
+    </div>
+  </details>
+
+  <!-- Upload -->
+  <div id="uploadSection" class="card">
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-zone-icon">&#128196;</div>
+      <div class="drop-zone-text">拖拽文件到此处，或点击选择文件</div>
+      <div class="drop-zone-hint">支持 PDF 文件（需 mineru-api）和 JSON 文件（已解析的 content_list）</div>
+      <input type="file" id="fileInput" accept=".pdf,.json">
+    </div>
+    <div id="fileInfo" class="hidden" style="text-align:center;padding:12px 0">
+      <span id="fileName" style="font-weight:500"></span>
+      <span id="fileBadge" class="badge" style="margin-left:8px"></span>
+      <div class="upload-actions">
+        <button id="btnSubmit" class="drop-zone" style="padding:10px 32px;border-style:solid;cursor:pointer;font-size:15px;font-weight:500">开始解析</button>
+        <button id="btnReset" style="padding:10px 24px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;font-size:14px">重新选择</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="statusSection" class="card hidden">
+    <div class="status-box" id="statusBox">
+      <div class="spinner" id="statusSpinner"></div>
+      <div class="progress-text" id="statusText">正在提交解析任务...</div>
+      <div class="task-id" id="taskIdText"></div>
+      <div class="error-detail hidden" id="errorDetail"></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="resultSection" class="hidden">
+
+    <!-- Summary bar -->
+    <div class="card" style="padding:16px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div><strong id="resultDocId"></strong></div>
+        <div><span class="badge" id="resultDocType" style="background:#e0e7ff;color:#3730a3;font-size:13px;padding:4px 14px"></span></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="card" style="padding:20px">
+      <div class="tabs" id="tabBar">
+        <div class="tab active" data-tab="issuer_profile">发行人信息</div>
+        <div class="tab" data-tab="ownership_structure">股权结构</div>
+        <div class="tab" data-tab="financials">财务指标</div>
+        <div class="tab" data-tab="fund_raising_projects">募投项目</div>
+        <div class="tab" data-tab="risk_items">风险事项</div>
+        <div class="tab" data-tab="compliance_items">合规事项</div>
+        <div class="tab" data-tab="evidence_index">证据索引</div>
+      </div>
+      <div id="tabContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const dropZone = $('dropZone');
+  const fileInput = $('fileInput');
+  const fileInfo = $('fileInfo');
+  const fileName = $('fileName');
+  const fileBadge = $('fileBadge');
+  const btnSubmit = $('btnSubmit');
+  const btnReset = $('btnReset');
+  const uploadSection = $('uploadSection');
+  const statusSection = $('statusSection');
+  const statusBox = $('statusBox');
+  const statusSpinner = $('statusSpinner');
+  const statusText = $('statusText');
+  const taskIdText = $('taskIdText');
+  const errorDetail = $('errorDetail');
+  const resultSection = $('resultSection');
+  const resultDocId = $('resultDocId');
+  const resultDocType = $('resultDocType');
+
+  let selectedFile = null;
+  let pollTimer = null;
+
+  // File selection
+  function selectFile(file) {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'pdf' && ext !== 'json') {
+      alert('只支持 PDF 或 JSON 文件');
+      return;
+    }
+    selectedFile = file;
+    fileName.textContent = file.name;
+    fileBadge.textContent = ext === 'pdf' ? 'PDF' : 'JSON';
+    fileBadge.className = 'badge ' + (ext === 'pdf' ? 'badge-pdf' : 'badge-json');
+    dropZone.classList.add('hidden');
+    fileInfo.classList.remove('hidden');
+  }
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); selectFile(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) selectFile(fileInput.files[0]); });
+
+  btnReset.addEventListener('click', () => {
+    selectedFile = null;
+    fileInput.value = '';
+    fileInfo.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+  });
+
+  // Submit
+  btnSubmit.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    uploadSection.classList.add('hidden');
+    statusSection.classList.remove('hidden');
+    statusBox.className = 'status-box status-processing';
+    statusSpinner.classList.remove('hidden');
+    statusText.textContent = '正在提交解析任务...';
+    errorDetail.classList.add('hidden');
+    taskIdText.textContent = '';
+
+    try {
+      const resp = await fetch('/extract', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || '提交失败');
+      const taskId = data.task_id;
+      taskIdText.textContent = '任务 ID: ' + taskId;
+      statusText.textContent = '任务已提交，正在解析...';
+      pollStatus(taskId);
+    } catch (err) {
+      statusSpinner.classList.add('hidden');
+      statusBox.className = 'status-box status-failed';
+      statusText.textContent = '提交失败';
+      errorDetail.textContent = err.message;
+      errorDetail.classList.remove('hidden');
+    }
+  });
+
+  // Polling
+  function pollStatus(taskId) {
+    let attempts = 0;
+    const maxAttempts = 600;
+
+    function poll() {
+      attempts++;
+      if (attempts > maxAttempts) {
+        statusSpinner.classList.add('hidden');
+        statusBox.className = 'status-box status-failed';
+        statusText.textContent = '解析超时';
+        errorDetail.textContent = '任务处理超过预期时间，请稍后重试';
+        errorDetail.classList.remove('hidden');
+        return;
+      }
+
+      fetch('/status/' + taskId)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'processing') {
+            const dots = '.'.repeat((attempts % 3) + 1);
+            statusText.textContent = '正在解析文档' + dots;
+            setTimeout(poll, 2000);
+          } else if (data.status === 'done') {
+            statusSpinner.classList.add('hidden');
+            statusBox.className = 'status-box status-done';
+            statusText.textContent = '解析完成！';
+            setTimeout(() => {
+              statusSection.classList.add('hidden');
+              showResult(data.result);
+            }, 600);
+          } else if (data.status === 'failed') {
+            statusSpinner.classList.add('hidden');
+            statusBox.className = 'status-box status-failed';
+            statusText.textContent = '解析失败';
+            errorDetail.textContent = data.error || '未知错误';
+            errorDetail.classList.remove('hidden');
+          }
+        })
+        .catch(err => {
+          statusSpinner.classList.add('hidden');
+          statusBox.className = 'status-box status-failed';
+          statusText.textContent = '查询失败';
+          errorDetail.textContent = err.message;
+          errorDetail.classList.remove('hidden');
+        });
+    }
+    poll();
+  }
+
+  // Result display
+  function showResult(result) {
+    resultDocId.textContent = result.document_id || '—';
+    resultDocType.textContent = result.document_type || '—';
+    resultSection.classList.remove('hidden');
+
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => t.addEventListener('click', function() {
+      tabs.forEach(tt => tt.classList.remove('active'));
+      this.classList.add('active');
+      renderTab(this.dataset.tab, result);
+    }));
+
+    // Render first tab
+    renderTab('issuer_profile', result);
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderTab(tabName, result) {
+    const container = $('tabContent');
+    switch (tabName) {
+      case 'issuer_profile': renderIssuerProfile(container, result.issuer_profile); break;
+      case 'ownership_structure': renderOwnership(container, result.ownership_structure); break;
+      case 'financials': renderTableList(container, result.financials, [
+        {key:'field_name',label:'字段名称'},{key:'field_scope',label:'口径'},{key:'period',label:'期间'},{key:'value',label:'数值',render:v=>v!==null&&v!==undefined?v.toLocaleString():null},{key:'unit',label:'单位'},{key:'chapter',label:'来源章节'}
+      ]); break;
+      case 'fund_raising_projects': renderProjects(container, result.fund_raising_projects); break;
+      case 'risk_items': renderRiskItems(container, result.risk_items); break;
+      case 'compliance_items': renderComplianceItems(container, result.compliance_items); break;
+      case 'evidence_index': renderTableList(container, result.evidence_index, [
+        {key:'evidence_id',label:'证据ID'},{key:'page_no',label:'页码'},{key:'chapter',label:'章节'},{key:'block_type',label:'类型'},{key:'quote',label:'引用',render:v=>v?v.slice(0,80)+(v.length>80?'...':''):null}
+      ]); break;
+    }
+  }
+
+  function renderIssuerProfile(container, data) {
+    if (!data) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+    const fields = [
+      {label:'公司名称',key:'issuer_name'},{label:'规范化名称',key:'issuer_name_normalized'},
+      {label:'股票代码',key:'stock_code'},{label:'交易所',key:'exchange'},
+      {label:'上市板块',key:'board'},{label:'法定代表人',key:'legal_representative'},
+      {label:'成立日期',key:'establishment_date'},{label:'注册地址',key:'registered_address'},
+      {label:'所属行业',key:'industry'},{label:'主营业务',key:'main_business'}
+    ];
+    let html = '<div class="section-title">发行人基础信息</div><div class="fields-grid">';
+    fields.forEach(f => {
+      let val = data[f.key];
+      html += '<div class="field-card"><div class="label">'+f.label+'</div><div class="value'+(val===null||val===undefined||val===''?' null':'')+'">'+(val||'—')+'</div></div>';
+    });
+    // registered_capital sub-object
+    const cap = data.registered_capital;
+    if (cap) {
+      html += '<div class="field-card"><div class="label">注册资本</div><div class="value'+(cap.value===null||cap.value===undefined?' null':'')+'">'+(cap.value!==null&&cap.value!==undefined?cap.value.toLocaleString()+' ':'— ')+(cap.unit||'')+' '+(cap.currency||'')+'</div></div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function renderOwnership(container, data) {
+    if (!data) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+
+    let html = '';
+
+    // Controlling shareholder
+    html += '<div class="section-title">控股股东</div>';
+    if (data.controlling_shareholder && data.controlling_shareholder.length > 0) {
+      html += renderItemTable(data.controlling_shareholder, [
+        {key:'name',label:'股东名称'},{key:'shareholding_ratio',label:'持股比例',render:v=>v!==null&&v!==undefined?(v*100).toFixed(2)+'%':null},
+        {key:'direct_or_indirect',label:'持股方式'},{key:'source_evidence_id',label:'证据ID'}
+      ]);
+    } else {
+      html += '<div class="null" style="margin-bottom:20px">无数据</div>';
+    }
+
+    // Actual controller
+    html += '<div class="section-title">实际控制人</div>';
+    if (data.actual_controller && data.actual_controller.length > 0) {
+      html += renderItemTable(data.actual_controller, [
+        {key:'name',label:'名称'},{key:'control_type',label:'控制类型'},{key:'source_evidence_id',label:'证据ID'}
+      ]);
+    } else {
+      html += '<div class="null" style="margin-bottom:20px">无数据</div>';
+    }
+
+    // Concerted action
+    html += '<div style="margin-bottom:20px"><span class="field-card" style="display:inline-block;padding:8px 16px"><strong>一致行动关系：</strong> '+(data.concerted_action_flag?'是':'否')+'</span></div>';
+
+    // Top shareholders
+    html += '<div class="section-title">前十大股东</div>';
+    if (data.top_shareholders && data.top_shareholders.length > 0) {
+      html += renderItemTable(data.top_shareholders, [
+        {key:'rank',label:'排名'},{key:'name',label:'股东名称'},{key:'shareholding_ratio',label:'持股比例',render:v=>v!==null&&v!==undefined?(v*100).toFixed(2)+'%':null},
+        {key:'source_evidence_id',label:'证据ID'}
+      ]);
+    } else {
+      html += '<div class="null">无数据</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function renderTableList(container, items, columns) {
+    if (!items || items.length === 0) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+    let html = '<table class="data-table"><thead><tr>';
+    columns.forEach(c => html += '<th>'+c.label+'</th>');
+    html += '</tr></thead><tbody>';
+    items.forEach(item => {
+      html += '<tr>';
+      columns.forEach(c => {
+        let val = item[c.key];
+        if (c.render) val = c.render(val);
+        html += '<td class="'+(val===null||val===undefined?'null':'')+'">'+(val||'—')+'</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function renderProjects(container, items) {
+    if (!items || items.length === 0) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+    let html = '';
+    items.forEach(p => {
+      html += '<div class="item-card"><div class="item-header"><div class="item-title">'+(p.project_name||'—')+'</div><span class="badge" style="background:#e0e7ff;color:#3730a3">'+(p.project_type||'—')+'</span></div>';
+      html += '<div class="item-meta">';
+      if (p.total_investment) html += '<span>总投资：'+(p.total_investment.value!==null&&p.total_investment.value!==undefined?p.total_investment.value.toLocaleString()+' ':'— ')+(p.total_investment.unit||'')+'</span>';
+      if (p.planned_use_of_raised_funds) html += '<span>拟使用募集资金：'+(p.planned_use_of_raised_funds.value!==null&&p.planned_use_of_raised_funds.value!==undefined?p.planned_use_of_raised_funds.value.toLocaleString()+' ':'— ')+(p.planned_use_of_raised_funds.unit||'')+'</span>';
+      if (p.construction_period) html += '<span>建设周期：'+p.construction_period+'</span>';
+      if (p.implementation_entity) html += '<span>实施主体：'+p.implementation_entity+'</span>';
+      html += '</div></div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function renderRiskItems(container, items) {
+    if (!items || items.length === 0) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+    let html = '';
+    items.forEach(r => {
+      const sev = (r.severity_level||'中');
+      const sevClass = sev==='高'?'severity-high':sev==='低'?'severity-low':'severity-medium';
+      html += '<div class="item-card '+sevClass+'"><div class="item-header"><div class="item-title">'+(r.risk_title||'—')+'</div><span class="badge" style="background:'+(sev==='高'?'#fef2f2;color:#991b1b':sev==='低'?'#f0fdf4;color:#166534':'#fffbeb;color:#92400e')+'">'+sev+'</span></div>';
+      html += '<div class="item-meta"><span>类别：'+(r.risk_category||'—')+'</span></div>';
+      if (r.risk_description) html += '<div class="item-desc">'+escapeHtml(r.risk_description)+'</div>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function renderComplianceItems(container, items) {
+    if (!items || items.length === 0) { container.innerHTML = '<div class="null">无数据</div>'; return; }
+    let html = '';
+    items.forEach(c => {
+      html += '<div class="item-card"><div class="item-header"><div class="item-title">'+(c.item_type||'—')+'</div></div>';
+      html += '<div class="item-meta">';
+      if (c.counter_party) html += '<span>交易对手：'+c.counter_party+'</span>';
+      if (c.occurrence_date) html += '<span>发生日期：'+c.occurrence_date+'</span>';
+      if (c.amount && c.amount.value!==null) html += '<span>金额：'+(c.amount.value!==null&&c.amount.value!==undefined?c.amount.value.toLocaleString()+' ':'— ')+(c.amount.unit||'')+'</span>';
+      if (c.period) html += '<span>关联期间：'+c.period+'</span>';
+      html += '</div>';
+      if (c.description) html += '<div class="item-desc">'+escapeHtml(c.description)+'</div>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function renderItemTable(items, columns) {
+    let html = '<table class="data-table"><thead><tr>';
+    columns.forEach(c => html += '<th>'+c.label+'</th>');
+    html += '</tr></thead><tbody>';
+    items.forEach(item => {
+      html += '<tr>';
+      columns.forEach(c => {
+        let val = item[c.key];
+        if (c.render) val = c.render(val);
+        html += '<td class="'+(val===null||val===undefined?'null':'')+'">'+(val||'—')+'</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // History
+  function loadTaskHistory() {
+    fetch('/tasks')
+      .then(r => r.json())
+      .then(data => {
+        const tasks = data.tasks || [];
+        const tbody = $('historyBody');
+        const empty = $('historyEmpty');
+        const count = $('historyCount');
+        count.textContent = '(' + tasks.length + ')';
+        if (tasks.length === 0) {
+          tbody.innerHTML = '';
+          empty.classList.remove('hidden');
+          return;
+        }
+        empty.classList.add('hidden');
+        tbody.innerHTML = tasks.map(t => {
+          const statusIcon = t.status === 'done' ? '<span style="color:#16a34a">&#10003;</span>'
+            : t.status === 'failed' ? '<span style="color:#dc2626">&#10007;</span>'
+            : '<span style="color:#f59e0b">&#8987;</span>';
+          const docType = t.document_type || '—';
+          const time = formatTime(t.created_at);
+          const actions = [];
+          if (t.status === 'done') {
+            actions.push('<button class="btn-sm btn-sm-primary" data-task-id="'+t.task_id+'" data-action="view">查看</button>');
+            actions.push('<a class="btn-sm" href="/tasks/'+t.task_id+'/download" download style="text-decoration:none;display:inline-block">下载</a>');
+          } else if (t.status === 'failed') {
+            actions.push('<button class="btn-sm" data-task-id="'+t.task_id+'" data-action="view-fail" data-error="'+escapeAttr(t.error||'')+'">查看</button>');
+          } else {
+            actions.push('<span style="color:#94a3b8;font-size:12px">处理中</span>');
+          }
+          return '<tr><td>'+escapeHtml(t.file_name)+'</td><td>'+docType+'</td><td>'+statusIcon+'</td><td style="white-space:nowrap">'+time+'</td><td class="op-btn">'+actions.join('')+'</td></tr>';
+        }).join('');
+      })
+      .catch(() => {});
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    } catch(e) { return iso; }
+  }
+
+  function escapeAttr(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Event delegation on history table
+  $('historyBody').addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const taskId = btn.dataset.taskId;
+    const action = btn.dataset.action;
+
+    if (action === 'view') {
+      fetch('/tasks/' + taskId + '/result')
+        .then(r => r.json())
+        .then(result => {
+          if (result.error) { showErrorView(result.error); return; }
+          uploadSection.classList.remove('hidden');
+          statusSection.classList.add('hidden');
+          showResult(result);
+          resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(err => showErrorView(err.message));
+    } else if (action === 'view-fail') {
+      showErrorView(btn.dataset.error || '未知错误');
+    }
+  });
+
+  function showErrorView(msg) {
+    uploadSection.classList.remove('hidden');
+    statusSection.classList.remove('hidden');
+    resultSection.classList.add('hidden');
+    statusBox.className = 'status-box status-failed';
+    statusSpinner.classList.add('hidden');
+    statusText.textContent = '任务失败';
+    errorDetail.textContent = msg;
+    errorDetail.classList.remove('hidden');
+    statusSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Refresh history after poll finishes
+  const origShowResult = showResult;
+  showResult = function(result) {
+    origShowResult(result);
+    loadTaskHistory();
+  };
+
+  // Initial load + refresh on tab visibility
+  loadTaskHistory();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) loadTaskHistory();
+  });
+})();
+</script>
+</body>
+</html>
