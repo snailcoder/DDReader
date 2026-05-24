@@ -85,14 +85,17 @@ def parse_amount(text: str) -> Optional[Dict[str, Any]]:
         5,700.00 万元
         10,657,504.92 元
         人民币 17.52 元
+        1亿元 / 1.2亿
+        -1,234.56 万元
         不适用
+
+    返回值 unit 始终为 schema 允许的枚举值（万元/元/%），亿元自动换算为万元。
     """
     if not text or text.strip() in {"不适用", "-", "—", "", "None", "null"}:
         return None
 
     text = text.strip()
 
-    # 先尝试提取币种
     currency = "CNY"
     if "美元" in text or "USD" in text or "$" in text:
         currency = "USD"
@@ -100,33 +103,47 @@ def parse_amount(text: str) -> Optional[Dict[str, Any]]:
         currency = "HKD"
     elif "欧元" in text or "EUR" in text:
         currency = "EUR"
-    elif "人民币" in text or "元" in text:
-        currency = "CNY"
 
-    # 匹配数值 + 单位
-    # 支持 1,234.56 或 1234.56 或 1,234
-    pattern = r"([\d,]+\.?\d*)\s*(万元|亿元|元|万美元|万港元|万欧元|%)"
-    match = re.search(pattern, text)
-    if match:
-        num_str = match.group(1).replace(",", "")
-        unit = match.group(2)
+    def _parse_number(s: str) -> Optional[float]:
+        s = s.replace(",", "")
         try:
-            value = float(num_str)
+            return float(s)
         except ValueError:
             return None
+
+    def _new_amount(value: float, unit: str, currency: str) -> Dict[str, Any]:
+        if unit == "亿元":
+            value = value * 10000
+            unit = "万元"
         return {"value": value, "unit": unit, "currency": currency}
 
-    # 兜底：如果文本中包含"元"或"万"等字样，但没有被上面匹配到，尝试只取数字
+    # 匹配带负号的金额: -1,234.56 万元 / 1亿元 / 1.2亿
+    pattern = r"(-?[\d,]+\.?\d*)\s*(亿元|万元|万|元|万美元|万港元|万欧元|%)"
+    match = re.search(pattern, text)
+    if match:
+        num_str = match.group(1)
+        raw_unit = match.group(2)
+        value = _parse_number(num_str)
+        if value is not None:
+            if raw_unit == "万":
+                raw_unit = "万元"
+            return _new_amount(value, raw_unit, currency)
+
+    # 匹配 "约1.2亿"、"1亿" 等无"元"后缀的"亿"
+    m2 = re.search(r"(-?[\d,]+\.?\d*)\s*亿(?!元)", text)
+    if m2:
+        value = _parse_number(m2.group(1))
+        if value is not None:
+            return _new_amount(value, "亿元", currency)
+
+    # 兜底：文本中包含"元"或"万"字样
     if "元" in text or "万" in text:
-        num_match = re.search(r"([\d,]+\.?\d*)", text)
+        num_match = re.search(r"(-?[\d,]+\.?\d*)", text)
         if num_match:
-            num_str = num_match.group(1).replace(",", "")
-            try:
-                value = float(num_str)
-            except ValueError:
-                return None
-            unit = "元" if "元" in text and "万" not in text else "万元"
-            return {"value": value, "unit": unit, "currency": currency}
+            value = _parse_number(num_match.group(1))
+            if value is not None:
+                unit = "元" if "元" in text and "万" not in text else "万元"
+                return {"value": value, "unit": unit, "currency": currency}
 
     return None
 
@@ -239,6 +256,32 @@ def chunk_text(text: str, max_chars: int = 6000) -> List[str]:
     if current:
         chunks.append(current.strip())
     return chunks
+
+
+def infer_stock_code(text: str) -> Optional[str]:
+    """从文本中提取股票代码
+
+    匹配规则：在"股票代码""证券代码""代码"等关键词后查找 6 位数字，
+    可能带 .SH/.SZ/.BJ 后缀。
+    """
+    if not text:
+        return None
+
+    keywords = r"(?:股票代码|证券代码|A股代码|代码|股票简称)"
+    patterns = [
+        rf"{keywords}\s*[：:]\s*(\d{{6}})(?:\.(SH|SZ|BJ))?",
+        rf"{keywords}\s*[：:]\s*(\d{{6}})",
+        rf"(\d{{6}})\.(SH|SZ|BJ)",
+    ]
+
+    for pat in patterns:
+        m = re.search(pat, text, re.IGNORECASE)
+        if m:
+            code = m.group(1)
+            suffix = m.group(2) if m.lastindex and m.lastindex >= 2 else None
+            return f"{code}.{suffix}" if suffix else code
+
+    return None
 
 
 def build_document_id_from_dir(input_dir: str) -> str:

@@ -51,10 +51,21 @@ class LLMExtractor:
         return self.async_client
 
     def _merge_texts_for_field(self, chapter_texts: Dict[str, str],
-                                field_category: str) -> str:
-        """为特定字段合并相关章节的文本"""
-        mapping = FIELD_CHAPTER_MAPPING.get(field_category, {})
-        keywords = mapping.get("keywords", [])
+                                field_category: str,
+                                field_mapping: Optional[Dict[str, list]] = None) -> str:
+        """为特定字段合并相关章节的文本
+
+        Args:
+            field_mapping: 动态映射 {field: [chapter_heading, ...]}，
+                           为 None 时回退到静态 FIELD_CHAPTER_MAPPING 关键词匹配
+        """
+        if field_mapping and field_category in field_mapping:
+            keywords = field_mapping[field_category]
+            use_exact = True
+        else:
+            mapping = FIELD_CHAPTER_MAPPING.get(field_category, {})
+            keywords = mapping.get("keywords", [])
+            use_exact = False
 
         parts = []
         total = 0
@@ -65,8 +76,10 @@ class LLMExtractor:
             if not text:
                 continue
 
-            # 检查章节是否与字段相关
-            is_relevant = any(kw in chapter_name for kw in keywords)
+            if use_exact:
+                is_relevant = chapter_name in keywords
+            else:
+                is_relevant = any(kw in chapter_name for kw in keywords)
             if not is_relevant:
                 continue
 
@@ -82,25 +95,38 @@ class LLMExtractor:
         return "\n".join(parts)
 
     def _merge_evidence_for_field(self, chapter_texts: Dict[str, str],
-                                   field_category: str) -> List[Dict]:
+                                   field_category: str,
+                                   field_mapping: Optional[Dict[str, list]] = None) -> List[Dict]:
         """为特定字段合并相关章节的证据"""
-        mapping = FIELD_CHAPTER_MAPPING.get(field_category, {})
-        keywords = mapping.get("keywords", [])
+        if field_mapping and field_category in field_mapping:
+            keywords = field_mapping[field_category]
+            use_exact = True
+        else:
+            mapping = FIELD_CHAPTER_MAPPING.get(field_category, {})
+            keywords = mapping.get("keywords", [])
+            use_exact = False
 
         all_evidence = []
         for chapter_name, chapter_info in chapter_texts.items():
-            is_relevant = any(kw in chapter_name for kw in keywords)
+            if use_exact:
+                is_relevant = chapter_name in keywords
+            else:
+                is_relevant = any(kw in chapter_name for kw in keywords)
             if is_relevant:
                 evidence = chapter_info.get("evidence", [])
                 all_evidence.extend(evidence)
 
         return all_evidence
 
-    def extract_all(self, chapter_texts: Dict[str, Dict]) -> Tuple[Dict[str, Any], Dict[str, List[Dict]]]:
+    def extract_all(self, chapter_texts: Dict[str, Dict],
+                    field_mapping: Optional[Dict[str, list]] = None
+                    ) -> Tuple[Dict[str, Any], Dict[str, List[Dict]]]:
         """抽取全部 6 类字段（同步版本）
 
         Args:
             chapter_texts: 章节文本映射
+            field_mapping: 动态章节-字段映射 {field: [chapter_heading, ...]}
+                           None 时使用静态 FIELD_CHAPTER_MAPPING
 
         Returns:
             (抽取结果, 证据映射)
@@ -109,19 +135,22 @@ class LLMExtractor:
         evidence_map = {}
 
         for field_category in FIELD_CHAPTER_MAPPING:
-            text = self._merge_texts_for_field(chapter_texts, field_category)
-            evidence = self._merge_evidence_for_field(chapter_texts, field_category)
+            text = self._merge_texts_for_field(chapter_texts, field_category, field_mapping)
+            evidence = self._merge_evidence_for_field(chapter_texts, field_category, field_mapping)
 
             results[field_category] = self._extract_single(field_category, text)
             evidence_map[field_category] = evidence
 
         return results, evidence_map
 
-    async def extract_all_async(self, chapter_texts: Dict[str, Dict]) -> Tuple[Dict[str, Any], Dict[str, List[Dict]]]:
+    async def extract_all_async(self, chapter_texts: Dict[str, Dict],
+                                field_mapping: Optional[Dict[str, list]] = None
+                                ) -> Tuple[Dict[str, Any], Dict[str, List[Dict]]]:
         """抽取全部 6 类字段（异步并发版本）
 
         Args:
             chapter_texts: 章节文本映射
+            field_mapping: 动态章节-字段映射 {field: [chapter_heading, ...]}
 
         Returns:
             (抽取结果, 证据映射)
@@ -130,8 +159,8 @@ class LLMExtractor:
         texts = {}
 
         for field_category in FIELD_CHAPTER_MAPPING:
-            texts[field_category] = self._merge_texts_for_field(chapter_texts, field_category)
-            evidence_map[field_category] = self._merge_evidence_for_field(chapter_texts, field_category)
+            texts[field_category] = self._merge_texts_for_field(chapter_texts, field_category, field_mapping)
+            evidence_map[field_category] = self._merge_evidence_for_field(chapter_texts, field_category, field_mapping)
 
         tasks = [
             self._extract_async(field_category, texts[field_category])

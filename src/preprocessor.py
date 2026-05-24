@@ -15,7 +15,6 @@ def find_content_list_file(input_dir: str) -> Optional[Path]:
     matches = list(d.glob("*_content_list.json"))
     if matches:
         return matches[0]
-    # 也尝试查找 content_list.json
     cl_path = d / "content_list.json"
     if cl_path.exists():
         return cl_path
@@ -29,6 +28,25 @@ def load_content_list(input_dir: str) -> List[Dict]:
         raise FileNotFoundError(f"在 {input_dir} 中未找到 content_list.json 文件")
     with open(cl_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_raw_blocks_map(input_dir: str) -> Dict[int, List[Dict]]:
+    """加载原始 mineru block，按 page_idx 分组（已过滤 SKIP_TYPES）
+
+    返回: {page_idx: [block, ...], ...}
+    保留各 block 的原始字段（text, bbox, type, page_idx 等）
+    """
+    content_list = load_content_list(input_dir)
+    pages: Dict[int, List[Dict]] = {}
+    for block in content_list:
+        block_type = block.get("type", "text")
+        if block_type in SKIP_TYPES:
+            continue
+        page_idx = block.get("page_idx", 0)
+        if page_idx not in pages:
+            pages[page_idx] = []
+        pages[page_idx].append(block)
+    return pages
 
 
 def _convert_text_level_to_markdown(text: str, text_level: Optional[int]) -> str:
@@ -49,12 +67,10 @@ def _merge_page_content(blocks: List[Dict]) -> str:
         if not text:
             continue
 
-        # 处理标题
         if block_type == "text":
             text_level = block.get("text_level")
             text = _convert_text_level_to_markdown(text, text_level)
 
-        # 处理表格（如果有的话）
         if block_type == "table":
             html = block.get("html", "")
             if html:
@@ -78,25 +94,21 @@ def preprocess(input_dir: str) -> List[Dict]:
     """
     content_list = load_content_list(input_dir)
 
-    # 按 page_idx 分组
     pages: Dict[int, List[Dict]] = {}
     for block in content_list:
-        # 跳过不需要的类型
         block_type = block.get("type", "text")
         if block_type in SKIP_TYPES:
             continue
-
         page_idx = block.get("page_idx", 0)
         if page_idx not in pages:
             pages[page_idx] = []
         pages[page_idx].append(block)
 
-    # 按页码排序，合并每页内容
     result = []
     for page_idx in sorted(pages.keys()):
         blocks = pages[page_idx]
         text = _merge_page_content(blocks)
-        if text.strip():  # 只保留有内容的页面
+        if text.strip():
             result.append({
                 "page_idx": page_idx,
                 "text": text,

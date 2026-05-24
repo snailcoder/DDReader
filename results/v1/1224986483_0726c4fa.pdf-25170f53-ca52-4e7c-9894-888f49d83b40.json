@@ -1,0 +1,33 @@
+{
+  "document_id": "1224986483_0726c4fa.pdf-25170f53-ca52-4e7c-9894-888f49d83b40",
+  "document_type": "招股说明书",
+  "issuer_profile": {
+    "issuer_name": null,
+    "issuer_name_normalized": null,
+    "stock_code": null,
+    "exchange": null,
+    "board": null,
+    "legal_representative": null,
+    "establishment_date": null,
+    "registered_capital": {
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    "registered_address": null,
+    "industry": null,
+    "main_business": null,
+    "source_evidence_id": null
+  },
+  "ownership_structure": {
+    "controlling_shareholder": [],
+    "actual_controller": [],
+    "concerted_action_flag": false,
+    "top_shareholders": []
+  },
+  "financials": [],
+  "fund_raising_projects": [],
+  "risk_items": [],
+  "compliance_items": [],
+  "evidence_index": []
+}

@@ -231,9 +231,15 @@ def _process_amount_field(raw: Any) -> Optional[Dict[str, Any]]:
     if raw is None:
         return None
     if isinstance(raw, dict):
+        value = _to_float(raw.get("value"))
+        unit = raw.get("unit") or "万元"
+        if unit == "亿元":
+            if value is not None:
+                value = value * 10000
+            unit = "万元"
         return {
-            "value": _to_float(raw.get("value")),
-            "unit": raw.get("unit") or "万元",
+            "value": value,
+            "unit": unit,
             "currency": raw.get("currency") or "CNY",
         }
     if isinstance(raw, str):
@@ -256,8 +262,20 @@ def _to_float(val: Any) -> Optional[float]:
         return float(val)
     if isinstance(val, str):
         s = val.strip().replace(",", "")
-        # 去除可能的单位后缀
-        s = re.sub(r"[万元亿元元%]", "", s).strip()
+        # "1亿元" -> 10000.0, "1万元" -> 1.0
+        yi_match = re.search(r"([\d.]+)\s*亿元?", s)
+        if yi_match:
+            try:
+                return float(yi_match.group(1)) * 10000
+            except ValueError:
+                return None
+        wan_match = re.search(r"([\d.]+)\s*万", s)
+        if wan_match and "亿" not in s:
+            try:
+                return float(wan_match.group(1))
+            except ValueError:
+                return None
+        s = re.sub(r"[元%]", "", s).strip()
         try:
             return float(s)
         except ValueError:

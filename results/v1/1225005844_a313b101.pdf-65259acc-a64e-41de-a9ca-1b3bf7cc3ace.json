@@ -1,0 +1,33 @@
+{
+  "document_id": "1225005844_a313b101.pdf-65259acc-a64e-41de-a9ca-1b3bf7cc3ace",
+  "document_type": "H股公告",
+  "issuer_profile": {
+    "issuer_name": null,
+    "issuer_name_normalized": null,
+    "stock_code": null,
+    "exchange": null,
+    "board": null,
+    "legal_representative": null,
+    "establishment_date": null,
+    "registered_capital": {
+      "value": null,
+      "unit": "万元",
+      "currency": "CNY"
+    },
+    "registered_address": null,
+    "industry": null,
+    "main_business": null,
+    "source_evidence_id": null
+  },
+  "ownership_structure": {
+    "controlling_shareholder": [],
+    "actual_controller": [],
+    "concerted_action_flag": false,
+    "top_shareholders": []
+  },
+  "financials": [],
+  "fund_raising_projects": [],
+  "risk_items": [],
+  "compliance_items": [],
+  "evidence_index": []
+}

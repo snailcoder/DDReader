@@ -1,0 +1,537 @@
+[
+    [
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "中电科蓝天科技股份有限公司"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                305,
+                92,
+                692,
+                118
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "首次公开发行股票并在科创板上市"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                275,
+                129,
+                722,
+                155
+            ]
+        },
+        {
+            "type": "title",
+            "content": {
+                "title_content": [
+                    {
+                        "type": "text",
+                        "content": "招股说明书提示性公告"
+                    }
+                ],
+                "level": 1
+            },
+            "bbox": [
+                349,
+                166,
+                648,
+                191
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "保荐人（主承销商）：中信建投证券股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                253,
+                205,
+                742,
+                225
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "联席主承销商：国泰海通证券股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                275,
+                239,
+                719,
+                259
+            ]
+        },
+        {
+            "type": "image",
+            "content": {
+                "image_source": {
+                    "path": "images/994d2d476d42918b320ef1edb048069139aa3cbde6aa701068b4e2c8b72ac00d.jpg"
+                },
+                "image_caption": [
+                    {
+                        "type": "text",
+                        "content": "扫描二维码查阅公告全文"
+                    }
+                ],
+                "image_footnote": []
+            },
+            "bbox": [
+                752,
+                261,
+                840,
+                322
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "中电科蓝天科技股份有限公司（以下简称“电科蓝天”、“发行人”或“公司”）首次公开发行人民币普通股（以下简称“本次发行”）并在科创板上市的申请已经上海证券交易所（以下简称“上交所”）科创板上市委员会审议通过，并已经中国证券监督管理委员会（以下简称“中国证监会”）同意注册（证监许可〔2025〕3018号）。《中电科蓝天科技股份有限公司首次公开发行股 票 并 在 科 创 板 上 市 招 股 说 明 书 》 在 上 海 证 券 交 易 所 网 站 （http://www.sse.com.cn/） 和 符 合 中 国 证 监 会 规 定 条 件 网 站 （ 中 证 网，https://www.cs.com.cn/；中国证券网，https://www.cnstock.com/；证券时报网，https://www.stcn.com/ ； 证 券 日 报 网 ， http://www.zqrb.cn/ ； 经 济 参 考 网 ，http://www.jjckb.cn/；金融时报网：https://www.financialnews.com.cn；中国日报网：https://www.chinadaily.com.cn）披露，并置备于发行人、上交所、本次发行保荐人（主承销商）中信建投证券股份有限公司、联席主承销商国泰海通证券股份有限公司的住所，供公众查阅。"
+                    }
+                ]
+            },
+            "bbox": [
+                154,
+                363,
+                843,
+                708
+            ]
+        },
+        {
+            "type": "table",
+            "content": {
+                "image_source": {
+                    "path": "images/819a3129cd08fe6bed0f4d7ae17b6951e6ec2fa3d19b933465d27ec4dfe18efa.jpg"
+                },
+                "table_caption": [],
+                "table_footnote": [],
+                "html": "<table><tr><td colspan=\"4\">本次发行基本情况</td></tr><tr><td>股票种类</td><td colspan=\"3\">人民币普通股（A股）</td></tr><tr><td>每股面值</td><td colspan=\"3\">人民币1.00元</td></tr><tr><td>发行股数</td><td>17,370.0000万股</td><td>占发行后总股本比例</td><td>10.00%</td></tr><tr><td>其中：发行新股数量</td><td>17,370.0000万股</td><td>占发行后总股本比例</td><td>10.00%</td></tr><tr><td>股东公开发售股份数量</td><td>无</td><td>占发行后总股本比例</td><td>-</td></tr><tr><td>每股发行价格</td><td colspan=\"3\">9.47元</td></tr><tr><td>发行市盈率</td><td colspan=\"3\">不适用</td></tr><tr><td>发行前每股净资产</td><td>2.29元/股（按2025年6月30日经审计的归属于母公司所有者权益除以本次发行前总股本计算）</td><td>发行前每股收益</td><td>0.19元/股（按2024年度经审计的扣除非经常性损益前后敦低的归属于母公司所有者的净利润除以本次发行前总股本计算）</td></tr><tr><td>发行后每股净资产</td><td>2.97元/股（按2025年6月30日经审计的归属于母公司所有者权益加上本次发行募集资金净额之和除以本次发行后总股本计算）</td><td>发行后每股收益</td><td>0.17元/股（按2024年度经审计的扣除非经常性损益前后敦低的归属于母公司所有者的净利润除以本次发行后总股本计算）</td></tr><tr><td>发行市净率</td><td colspan=\"3\">3.18倍（发行价格除以每股净资产，每股净资产按截至报告期末经审计的归属于母公司股东的权益与本次募集资金净额之和除以发行后总股本计算）</td></tr><tr><td>发行方式</td><td colspan=\"3\">本次发行采用向参与战略配售的投资者定向配售（以下简称“战略配售”）、网下向符合条件的投资者询价配售（以下简称“网下发行”）与网上向持有上海市场非限售A股股份和非限售存托凭证市值的社会公众投资者定价发行（以下简称“网上发行”）相结合的方式进行</td></tr><tr><td>发行对象</td><td colspan=\"3\">符合资格的战略投资者、网下投资者和在上海证券交易所开设证券账户并已开通科创板市场交易的自然人、法人等投资者（国家法律、法规禁止购买者除外）</td></tr><tr><td>承销方式</td><td colspan=\"3\">余额包销</td></tr><tr><td>募集资金总额</td><td colspan=\"3\">164,493.90万元</td></tr><tr><td>募集资金净额</td><td colspan=\"3\">157,916.14万元</td></tr><tr><td>募集资金投资项目</td><td colspan=\"3\">宇航电源系统产业化（一期）建设项目</td></tr><tr><td>发行费用概算</td><td colspan=\"3\">1、保荐及承销费用：合计3,859.88万元。上述保荐承销费参考市场保荐承销费率平均水平，结合服务的工作量等因素，经友好协商确定，根据项目进度分节点支付；2、审计及验资费用：1,433.96万元，依据服务的工作内容、所提供服务的人员工时、服务期间及参与提供服务的各级别人员的专业知识、工作经验等因素协商确定，按照项目进度分节点支付；3、律师费用：608.49万元，参考本次服务的工作量及实际表现等因素，并结合市场价格，经友好协商确定，按照项目进度分阶段支付；4、用于本次发行的信息披露费用：551.70万元；5、发行手续费及其他费用：123.73万元。注：上述费用均为不含增值税金额，含税金额=不含税金额*（1+6%）；印花税税基为扣除印花税前的募集资金净额，税率为0.025%</td></tr><tr><td>发行人高级管理人员、员工参与战略配售情况</td><td colspan=\"3\">本次发行公司高级管理人员、员工不参与战略配售</td></tr><tr><td>保荐人相关子公司参与战略配售情况</td><td colspan=\"3\">保荐人子公司中信建投投资有限公司（以下简称“中信建投投资”）参与本次发行战略配售，最终获配股数633.5797万股，跟投比例</td></tr><tr><td></td><td colspan=\"3\">为本次发行规模的3.65%,获配金额为6,000.00万元。中信建投投资有限公司承诺获得本次配售的股票限售期限为自发行人首次公开发行并上市之日起24个月。</td></tr><tr><td colspan=\"4\">发行人和保荐人(主承销商)</td></tr><tr><td>发行人</td><td colspan=\"3\">中电科蓝天科技股份有限公司</td></tr><tr><td>联系人</td><td>董事会办公室</td><td>联系电话</td><td>022-23721226</td></tr><tr><td>保荐人(主承销商)</td><td colspan=\"3\">中信建投证券股份有限公司</td></tr><tr><td>联系人</td><td>股权资本市场部</td><td>联系电话</td><td>010-56051607、010-56051608</td></tr><tr><td>联席主承销商</td><td colspan=\"3\">国泰海通证券股份有限公司</td></tr><tr><td>联系人</td><td>资本市场部</td><td>联系电话</td><td>010-66163772</td></tr></table>",
+                "table_type": "complex_table",
+                "table_nest_level": 1
+            },
+            "bbox": [
+                137,
+                715,
+                858,
+                897
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": []
+            },
+            "bbox": [
+                492,
+                928,
+                502,
+                938
+            ]
+        }
+    ],
+    [
+        {
+            "type": "table",
+            "content": {
+                "image_source": {
+                    "path": "images/"
+                },
+                "table_caption": [],
+                "table_footnote": [],
+                "html": "",
+                "table_type": "simple_table",
+                "table_nest_level": 1
+            },
+            "bbox": [
+                137,
+                83,
+                858,
+                904
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": []
+            },
+            "bbox": [
+                492,
+                928,
+                504,
+                938
+            ]
+        }
+    ],
+    [
+        {
+            "type": "table",
+            "content": {
+                "image_source": {
+                    "path": "images/"
+                },
+                "table_caption": [],
+                "table_footnote": [],
+                "html": "",
+                "table_type": "simple_table",
+                "table_nest_level": 1
+            },
+            "bbox": [
+                137,
+                83,
+                858,
+                312
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "发行人：中电科蓝天科技股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                502,
+                367,
+                847,
+                384
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "保荐人（主承销商）：中信建投证券股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                403,
+                395,
+                847,
+                411
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "联席主承销商：国泰海通证券股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                462,
+                423,
+                847,
+                439
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年2月5日"
+                    }
+                ]
+            },
+            "bbox": [
+                724,
+                451,
+                845,
+                467
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": []
+            },
+            "bbox": [
+                492,
+                928,
+                502,
+                938
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（本页无正文，为《中电科蓝天科技股份有限公司首次公开发行股票并在科创板上市招股说明书提示性公告》之盖章页）"
+                    }
+                ]
+            },
+            "bbox": [
+                147,
+                96,
+                840,
+                143
+            ]
+        },
+        {
+            "type": "image",
+            "content": {
+                "image_source": {
+                    "path": "images/8f322e4fb558ec9de9ba959f3655f14b42f6b5c1c20f521061e8b3846c2f8017.jpg"
+                },
+                "image_caption": [],
+                "image_footnote": []
+            },
+            "bbox": [
+                596,
+                231,
+                800,
+                334
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "发行人：中电科蓝天科技股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                495,
+                332,
+                838,
+                351
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年2月5日"
+                    }
+                ]
+            },
+            "bbox": [
+                645,
+                369,
+                838,
+                388
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "4 "
+                    }
+                ]
+            },
+            "bbox": [
+                492,
+                928,
+                505,
+                939
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（本页无正文，为《中电科蓝天科技股份有限公司首次公开发行股票并在科创板上市招股说明书提示性公告》之盖章页）"
+                    }
+                ]
+            },
+            "bbox": [
+                144,
+                87,
+                840,
+                134
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "保荐人（主承销商）：中信建投证券股份有限公司"
+                    }
+                ]
+            },
+            "bbox": [
+                396,
+                321,
+                838,
+                340
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年2月日"
+                    }
+                ]
+            },
+            "bbox": [
+                636,
+                357,
+                838,
+                374
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "5 "
+                    }
+                ]
+            },
+            "bbox": [
+                492,
+                927,
+                505,
+                939
+            ]
+        }
+    ],
+    [
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "（本页无正文，为《中电科蓝天科技股份有限公司首次公开发行股票并在科创板上市招股说明书提示性公告》之盖章页）"
+                    }
+                ]
+            },
+            "bbox": [
+                159,
+                90,
+                823,
+                136
+            ]
+        },
+        {
+            "type": "image",
+            "content": {
+                "image_source": {
+                    "path": "images/8a756c3238bfded62a7d4099d6995d1eb34a9275e4676a4f70c0363aff804ab7.jpg"
+                },
+                "image_caption": [],
+                "image_footnote": []
+            },
+            "bbox": [
+                618,
+                219,
+                818,
+                354
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "联席主承销商：国 司"
+                    }
+                ]
+            },
+            "bbox": [
+                460,
+                317,
+                831,
+                334
+            ]
+        },
+        {
+            "type": "paragraph",
+            "content": {
+                "paragraph_content": [
+                    {
+                        "type": "text",
+                        "content": "2026年2月5日"
+                    }
+                ]
+            },
+            "bbox": [
+                653,
+                351,
+                831,
+                369
+            ]
+        },
+        {
+            "type": "page_number",
+            "content": {
+                "page_number_content": [
+                    {
+                        "type": "text",
+                        "content": "6 "
+                    }
+                ]
+            },
+            "bbox": [
+                492,
+                928,
+                505,
+                939
+            ]
+        }
+    ]
+]

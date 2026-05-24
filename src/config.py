@@ -142,21 +142,23 @@ SYSTEM_PROMPT = """你是一位专业的金融文档信息抽取专家，擅长�
 
 ISSUER_PROFILE_PROMPT = """请从以下招股说明书文本中抽取【发行人基础信息】。
 
-需要抽取的字段：
-- issuer_name: 公司名称
-- stock_code: 股票代码（如有）
-- exchange: 交易所（上交所/深交所/北交所）
+需要抽取的字段（全部必填，在文本中找到为止，不能留 null）：
+- issuer_name: 公司全称（中文完整名称）
+- issuer_name_normalized: 规范化公司名称（去掉"股份有限公司"、"有限公司"、"有限责任公司"等后缀的简称）
+- stock_code: 股票代码（如 688123.SH、300999.SZ、601318 等，在文本中搜索"股票代码""证券代码""代码"后的数字）
+- exchange: 交易所（上交所/深交所/北交所，根据文本中提到的交易所名称判断）
 - board: 上市板块（主板/创业板/科创板/北交所）
-- legal_representative: 法定代表人
-- establishment_date: 成立日期，格式 YYYY-MM-DD
+- legal_representative: 法定代表人（在"法定代表人"后面找）
+- establishment_date: 成立日期，格式 YYYY-MM-DD（在"成立日期""成立时间""设立日期"后找）
 - registered_capital: 注册资本，格式 {"value": 数值, "unit": "万元", "currency": "CNY"}
-- registered_address: 注册地址
-- industry: 所属行业
-- main_business: 主营业务
+- registered_address: 注册地址（在"注册地址""住所"后找完整地址）
+- industry: 所属行业（在"所属行业""行业分类"后找，如"计算机、通信和其他电子设备制造业"）
+- main_business: 主营业务（从"主营业务""经营范围""主要业务"等描述中提取）
 
 注意：
-- 若某字段在文本中找不到，对应的值设为 null 或空字符串。
-- registered_capital 的 value 必须是纯数字，不带单位。
+- 所有字段都必须尽力查找，不允许随意设为 null。确实找不到再设为 null。
+- stock_code 格式为 6 位数字，可能带 .SH/.SZ 后缀。
+- registered_capital 的 value 必须是纯数字（不含逗号），unit 统一为"万元"（如原文是"亿元"则换算为万元）。
 - 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
