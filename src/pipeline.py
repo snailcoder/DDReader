@@ -114,7 +114,7 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
     # 6b. 大模型字段抽取
     print("[Pipeline] 调用大模型抽取字段...")
     extractor = llm_extractor or LLMExtractor()
-    extracted, evidence_map = extractor.extract_all(chapter_texts, field_mapping=field_mapping or None)
+    extracted, _ = extractor.extract_all(chapter_texts, field_mapping=field_mapping or None)
 
     # 打印抽取结果摘要
     issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
@@ -261,7 +261,7 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
     # 6b. 大模型字段抽取（异步并发）
     print("[Pipeline] 调用大模型抽取字段（异步并发）...")
     extractor = llm_extractor or LLMExtractor()
-    extracted, evidence_map = await extractor.extract_all_async(chapter_texts, field_mapping=field_mapping or None)
+    extracted, _ = await extractor.extract_all_async(chapter_texts, field_mapping=field_mapping or None)
 
     # 打印抽取结果摘要
     issuer_name = extracted.get("issuer_profile", {}).get("issuer_name") if extracted.get("issuer_profile") else None
