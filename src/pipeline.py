@@ -31,6 +31,7 @@ from .post_processor import (
     process_ownership_structure,
     process_risk_items,
     validate_result,
+    validate_against_schema,
 )
 from .preprocessor import preprocess, get_first_page_text, get_total_pages, load_raw_blocks_map
 from .text_extractor import extract_chapter_texts
@@ -167,7 +168,14 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
         for w in warnings:
             print(f"[Pipeline] 校验警告: {w}")
 
-    # 11. 保存结果
+    # 11. Schema 格式校验
+    print("[Pipeline] 运行 schema 格式校验...")
+    schema_errors = validate_against_schema(result)
+    if schema_errors:
+        for err in schema_errors:
+            print(f"[Pipeline] Schema 错误: {err}")
+
+    # 12. 保存结果
     if output_dir:
         _save_result(result, output_dir, doc_id)
 
@@ -307,7 +315,14 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
         for w in warnings:
             print(f"[Pipeline] 校验警告: {w}")
 
-    # 11. 保存结果
+    # 11. Schema 格式校验
+    print("[Pipeline] 运行 schema 格式校验...")
+    schema_errors = validate_against_schema(result)
+    if schema_errors:
+        for err in schema_errors:
+            print(f"[Pipeline] Schema 错误: {err}")
+
+    # 12. 保存结果
     if output_dir:
         _save_result(result, output_dir, doc_id)
 

@@ -97,9 +97,9 @@
 - 检测正文开始标志（`第一节` / `第X节`）作为目录结束边界
 
 **步骤 2：目录内容解析**
-- 正则匹配 `第X节 标题...页码` 提取大章信息
-- 正则匹配 `一、标题...页码` 提取小节信息
-- 校验：页码递增 + 常见章节关键词存在
+- 正则匹配 `第X节 标题...页码` 提取大章信息，分隔符支持半角点、全角点`．`、中间点`·`、制表符等
+- 正则匹配 `一、标题...页码` 提取小节信息，分隔符同上
+- 校验：页码允许相同或小幅倒退（≤5），只拒绝大幅倒退；常见章节关键词存在
 
 **步骤 3：大章切分**
 - 按目录中的起始/结束页码切分页面区间
@@ -110,7 +110,7 @@
 
 **步骤 5：子节切分**
 - 正则匹配全角括号 `（一）（二）（三）` 或半角括号 `(1)(2)(3)` 格式
-- 按子节标题位置切分文本
+- **去重**：全角/半角匹配分别触发时，按位置去重避免重复
 
 ### 2.5 LLM 字段抽取
 
@@ -164,7 +164,16 @@ compliance_items      → 其他重要事项 / 公司治理与独立性 / 投资
 - 募投项目拟使用募集资金总额 ≠ 0
 - 发行人名称为非空
 - 控股股东持股比例在 0-1 之间
+- 控股股东持股比例合计 ≤ 100%
+- 财务指标 `field_name` 非空（schema 标记为 required）
+- 财务指标 `unit` 值在 schema 枚举内（万元/元/%）
+- 所有 6 类字段的 `source_evidence_id` 非空
 - 同名指标在不同口径应有不同 field_scope
+
+**Schema 格式校验** (`validate_against_schema`)
+- 使用 `jsonschema.Draft7Validator` 对输出 JSON 进行格式校验
+- 检查必填字段、枚举值、数据类型、嵌套结构
+- 输出错误列表供人工复核
 
 ### 2.7 证据索引
 
@@ -264,6 +273,26 @@ src/
 ├── run.py                # 入口脚本（CLI）
 ├── pipeline.py           # Pipeline 主控（同步+异步）
 ├── config.py             # 全局配置（API、Prompt、Schema）
+├── preprocessor.py       # 预处理（含 load_raw_blocks_map）
+├── document_classifier.py# 文档分类
+├── chapter_parser.py     # 章节解析（TOC 正则已宽松化）
+├── text_extractor.py     # 文本提取
+├── llm_client.py         # LLM API 客户端（同步+异步）
+├── llm_extractor.py      # 字段抽取器
+├── post_processor.py     # 后处理（含 validate_against_schema）
+├── evidence_builder.py   # 证据索引
+├── utils.py              # 通用工具（已清理死代码）
+└── chapter_mapper.py     # 章节-字段动态映射（jieba+TF-IDF）
+```
+
+**已清理的死代码**：
+- `config.py` 中 `CHAPTER_KEYWORDS`（由 `llm_extractor.py::FIELD_CHAPTER_MAPPING` 替代）
+- `text_extractor.py` 中 `get_text_for_field()`
+- `utils.py` 中 `load_mineru_data()`、`sanitize_json_string()`、重复的 `infer_exchange_and_board()`
+src/
+├── run.py                # 入口脚本（CLI）
+├── pipeline.py           # Pipeline 主控（同步+异步）
+├── config.py             # 全局配置（API、Prompt、Schema）
 ├── preprocessor.py       # 预处理
 ├── document_classifier.py# 文档分类
 ├── chapter_parser.py     # 章节解析
@@ -308,7 +337,8 @@ src/
 - Python 3.10+
 - `openai>=1.0.0`（OpenAI SDK 兼容接口）
 - `python-dotenv>=1.0.0`（环境变量管理）
-- `jieba>=0.42.1`（中文分词，用于动态章节-字段映射）
+- `jieba>=0.42.1`（章节-字段动态映射）
+- `jsonschema>=4.0.0`（输出格式校验）
 - mineru（PDF 解析，独立安装）
 
 ---
@@ -488,12 +518,13 @@ src/
 
 ### 8.1 当前局限
 
-1. **跨页表格拼接**：当前由 mineru 处理，系统层面未实现跨页表格的二次拼接
-2. **多文档融合**：同一企业的多份披露文件联合解析尚未实现
-3. **复杂财务附注**：会计政策变更、准则切换等场景需要更精细的处理
-4. **脚注关联**：表格脚注与表格的关联关系尚未建立
-5. **issuer_profile 的 LLM 抽取仍不稳定**：Prompt 优化后部分字段仍可能被 LLM 跳过（如 registered_capital.value、registered_address），依赖规则层后补
-6. **无 schema.json 输出校验**：Pipeline 输出前未做 jsonschema 格式校验，非法格式直接输出
+1. **TOC 解析覆盖率有限**：正则宽松化后仍约 60% 招股说明书能成功解析章节；不同版式（如 H 股公告、特殊排版）需进一步适配
+2. **跨页表格拼接**：当前由 mineru 处理，系统层面未实现跨页表格的二次拼接
+3. **多文档融合**：同一企业的多份披露文件联合解析尚未实现
+4. **复杂财务附注**：会计政策变更、准则切换等场景需要更精细的处理
+5. **脚注关联**：表格脚注与表格的关联关系尚未建立
+6. **issuer_profile 的 LLM 抽取仍不稳定**：Prompt 优化后部分字段仍可能被 LLM 跳过（如 registered_capital.value、registered_address），依赖规则层后补
+7. **无增量校验**：Schema 格式校验仅在 pipeline 结束时执行，不在字段抽取过程中即时校验
 
 ### 8.2 改进方向
 

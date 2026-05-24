@@ -1,42 +1,8 @@
-"""通用工具函数：读取 mineru 输出、解析金额/日期/比例、文本清理等"""
+"""通用工具函数：解析金额/日期/比例、文本清理等"""
 
-import json
 import os
 import re
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-
-def load_mineru_data(input_dir: str) -> Dict[str, Any]:
-    """加载 mineru 解析后的全部数据文件
-
-    Returns dict with keys: full_md, content_list_v2, layout_json
-    """
-    d = Path(input_dir)
-    data = {}
-
-    full_md_path = d / "full.md"
-    if full_md_path.exists():
-        with open(full_md_path, "r", encoding="utf-8") as f:
-            data["full_md"] = f.read()
-    else:
-        data["full_md"] = ""
-
-    clv2_path = d / "content_list_v2.json"
-    if clv2_path.exists():
-        with open(clv2_path, "r", encoding="utf-8") as f:
-            data["content_list_v2"] = json.load(f)
-    else:
-        data["content_list_v2"] = []
-
-    layout_path = d / "layout.json"
-    if layout_path.exists():
-        with open(layout_path, "r", encoding="utf-8") as f:
-            data["layout_json"] = json.load(f)
-    else:
-        data["layout_json"] = {}
-
-    return data
 
 
 def infer_exchange_and_board_from_text(text: str) -> Tuple[Optional[str], Optional[str]]:
@@ -287,45 +253,3 @@ def infer_stock_code(text: str) -> Optional[str]:
 def build_document_id_from_dir(input_dir: str) -> str:
     """从目录名提取 document_id"""
     return os.path.basename(os.path.normpath(input_dir))
-
-
-def sanitize_json_string(raw: str) -> str:
-    """清理模型返回的 JSON 字符串（去除 markdown 代码块标记等）"""
-    raw = raw.strip()
-    if raw.startswith("```json"):
-        raw = raw[7:]
-    if raw.startswith("```"):
-        raw = raw[3:]
-    if raw.endswith("```"):
-        raw = raw[:-3]
-    return raw.strip()
-
-
-def infer_exchange_and_board(md_text: str) -> Tuple[Optional[str], Optional[str]]:
-    """从文本中推断交易所和板块"""
-    text_upper = md_text[:5000].upper()
-
-    exchange = None
-    board = None
-
-    if "科创板" in text_upper or "上海证券交易所科创板" in text_upper:
-        exchange = "上交所"
-        board = "科创板"
-    elif "创业板" in text_upper or "深圳证券交易所创业板" in text_upper:
-        exchange = "深交所"
-        board = "创业板"
-    elif "主板" in text_upper:
-        if "上海" in text_upper[:2000]:
-            exchange = "上交所"
-        else:
-            exchange = "深交所"
-        board = "主板"
-    elif "北交所" in text_upper or "北京证券交易所" in text_upper:
-        exchange = "北交所"
-        board = "北交所"
-    elif "上交所" in text_upper or "上海证券交易所" in text_upper:
-        exchange = "上交所"
-    elif "深交所" in text_upper or "深圳证券交易所" in text_upper:
-        exchange = "深交所"
-
-    return exchange, board

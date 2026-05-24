@@ -107,7 +107,7 @@ def _parse_toc_content(preprocessed: List[Dict], toc_pages: List[int]) -> List[D
         # 格式1：第X节 标题 ... 页码
         # 格式2：第X节 标题...页码（点号连接）
         chapter_match = re.search(
-            r"(第[一二三四五六七八九十百千\d]+[节章]\s*[、.]?\s*\S+?)[\s.]{2,}(\d+)",
+            r"(第[一二三四五六七八九十百千\d]+[节章]\s*[、.]?\s*\S+?)[\s.．·\t]{1,}(\d+)",
             line
         )
         if not chapter_match:
@@ -135,7 +135,7 @@ def _parse_toc_content(preprocessed: List[Dict], toc_pages: List[int]) -> List[D
         # 尝试匹配小节标题
         # 格式：一、标题 ... 页码
         section_match = re.search(
-            r"([一二三四五六七八九十百千]+[、．.]\s*\S+?)[\s.]{2,}(\d+)",
+            r"([一二三四五六七八九十百千]+[、．.]\s*\S+?)[\s.．·\t]{1,}(\d+)",
             line
         )
         if not section_match:
@@ -161,14 +161,17 @@ def _parse_toc_content(preprocessed: List[Dict], toc_pages: List[int]) -> List[D
 
 
 def _validate_toc(chapters: List[Dict]) -> bool:
-    """验证目录解析结果是否合理"""
+    """验证目录解析结果是否合理
+
+    页码允许相同或小幅跳跃，只拒绝明显倒退（差值 > 5）
+    """
     if not chapters:
         return False
 
-    # 检查页码是否递增
+    # 检查页码是否基本递增（允许相同或小倒退，拒绝大幅倒退）
     prev_page = -1
     for ch in chapters:
-        if ch["page_idx"] <= prev_page:
+        if ch["page_idx"] < prev_page - 5:
             return False
         prev_page = ch["page_idx"]
 
@@ -411,14 +414,21 @@ def _find_subsections_by_regex(text: str) -> List[Tuple[int, str]]:
         [(位置, 标题文本), ...]
     """
     results = []
+    seen_positions = set()
 
     # 匹配全角括号：（一）（二）...
     for match in re.finditer(r"[（\(][一二三四五六七八九十百千]+[）\)]\s*\S+", text):
-        results.append((match.start(), match.group().strip()))
+        pos = match.start()
+        if pos not in seen_positions:
+            seen_positions.add(pos)
+            results.append((pos, match.group().strip()))
 
     # 匹配半角括号+数字：(1) (2) ...
     for match in re.finditer(r"[（\(]\d+[）\)]\s*\S+", text):
-        results.append((match.start(), match.group().strip()))
+        pos = match.start()
+        if pos not in seen_positions:
+            seen_positions.add(pos)
+            results.append((pos, match.group().strip()))
 
     # 按位置排序
     results.sort(key=lambda x: x[0])
