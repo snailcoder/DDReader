@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  mineru-api:
+    image: opendatalab/mineru:latest
+    container_name: mineru-api
+    ports:
+      - "8000:8000"
+    command: mineru-api --host 0.0.0.0 --port 8000
+    environment:
+      - MINERU_API_TASK_RETENTION_SECONDS=86400
+      - MINERU_API_ENABLE_FASTAPI_DOCS=true
+    volumes:
+      - mineru-output:/app/output
+    profiles:
+      - full
+    restart: unless-stopped
+
+  drdd-api:
+    build: .
+    container_name: drdd-api
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      - DRDD_BASE_DIR=/data/drdd
+      - DRDD_TASKS_DIR=/data/drdd/tasks
+      - MINERU_API_URL=http://mineru-api:8000
+    volumes:
+      - drdd-data:/data/drdd
+    depends_on:
+      - mineru-api
+    profiles:
+      - full
+    restart: unless-stopped
+
+volumes:
+  mineru-output:
+  drdd-data:

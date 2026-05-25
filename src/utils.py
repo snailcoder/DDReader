@@ -1,42 +1,8 @@
-"""通用工具函数：读取 mineru 输出、解析金额/日期/比例、文本清理等"""
+"""通用工具函数：解析金额/日期/比例、文本清理等"""
 
-import json
 import os
 import re
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-
-def load_mineru_data(input_dir: str) -> Dict[str, Any]:
-    """加载 mineru 解析后的全部数据文件
-
-    Returns dict with keys: full_md, content_list_v2, layout_json
-    """
-    d = Path(input_dir)
-    data = {}
-
-    full_md_path = d / "full.md"
-    if full_md_path.exists():
-        with open(full_md_path, "r", encoding="utf-8") as f:
-            data["full_md"] = f.read()
-    else:
-        data["full_md"] = ""
-
-    clv2_path = d / "content_list_v2.json"
-    if clv2_path.exists():
-        with open(clv2_path, "r", encoding="utf-8") as f:
-            data["content_list_v2"] = json.load(f)
-    else:
-        data["content_list_v2"] = []
-
-    layout_path = d / "layout.json"
-    if layout_path.exists():
-        with open(layout_path, "r", encoding="utf-8") as f:
-            data["layout_json"] = json.load(f)
-    else:
-        data["layout_json"] = {}
-
-    return data
 
 
 def infer_exchange_and_board_from_text(text: str) -> Tuple[Optional[str], Optional[str]]:
@@ -85,14 +51,17 @@ def parse_amount(text: str) -> Optional[Dict[str, Any]]:
         5,700.00 万元
         10,657,504.92 元
         人民币 17.52 元
+        1亿元 / 1.2亿
+        -1,234.56 万元
         不适用
+
+    返回值 unit 始终为 schema 允许的枚举值（万元/元/%），亿元自动换算为万元。
     """
     if not text or text.strip() in {"不适用", "-", "—", "", "None", "null"}:
         return None
 
     text = text.strip()
 
-    # 先尝试提取币种
     currency = "CNY"
     if "美元" in text or "USD" in text or "$" in text:
         currency = "USD"
@@ -100,33 +69,47 @@ def parse_amount(text: str) -> Optional[Dict[str, Any]]:
         currency = "HKD"
     elif "欧元" in text or "EUR" in text:
         currency = "EUR"
-    elif "人民币" in text or "元" in text:
-        currency = "CNY"
 
-    # 匹配数值 + 单位
-    # 支持 1,234.56 或 1234.56 或 1,234
-    pattern = r"([\d,]+\.?\d*)\s*(万元|亿元|元|万美元|万港元|万欧元|%)"
-    match = re.search(pattern, text)
-    if match:
-        num_str = match.group(1).replace(",", "")
-        unit = match.group(2)
+    def _parse_number(s: str) -> Optional[float]:
+        s = s.replace(",", "")
         try:
-            value = float(num_str)
+            return float(s)
         except ValueError:
             return None
+
+    def _new_amount(value: float, unit: str, currency: str) -> Dict[str, Any]:
+        if unit == "亿元":
+            value = value * 10000
+            unit = "万元"
         return {"value": value, "unit": unit, "currency": currency}
 
-    # 兜底：如果文本中包含"元"或"万"等字样，但没有被上面匹配到，尝试只取数字
+    # 匹配带负号的金额: -1,234.56 万元 / 1亿元 / 1.2亿
+    pattern = r"(-?[\d,]+\.?\d*)\s*(亿元|万元|万|元|万美元|万港元|万欧元|%)"
+    match = re.search(pattern, text)
+    if match:
+        num_str = match.group(1)
+        raw_unit = match.group(2)
+        value = _parse_number(num_str)
+        if value is not None:
+            if raw_unit == "万":
+                raw_unit = "万元"
+            return _new_amount(value, raw_unit, currency)
+
+    # 匹配 "约1.2亿"、"1亿" 等无"元"后缀的"亿"
+    m2 = re.search(r"(-?[\d,]+\.?\d*)\s*亿(?!元)", text)
+    if m2:
+        value = _parse_number(m2.group(1))
+        if value is not None:
+            return _new_amount(value, "亿元", currency)
+
+    # 兜底：文本中包含"元"或"万"字样
     if "元" in text or "万" in text:
-        num_match = re.search(r"([\d,]+\.?\d*)", text)
+        num_match = re.search(r"(-?[\d,]+\.?\d*)", text)
         if num_match:
-            num_str = num_match.group(1).replace(",", "")
-            try:
-                value = float(num_str)
-            except ValueError:
-                return None
-            unit = "元" if "元" in text and "万" not in text else "万元"
-            return {"value": value, "unit": unit, "currency": currency}
+            value = _parse_number(num_match.group(1))
+            if value is not None:
+                unit = "元" if "元" in text and "万" not in text else "万元"
+                return {"value": value, "unit": unit, "currency": currency}
 
     return None
 
@@ -241,48 +224,32 @@ def chunk_text(text: str, max_chars: int = 6000) -> List[str]:
     return chunks
 
 
+def infer_stock_code(text: str) -> Optional[str]:
+    """从文本中提取股票代码
+
+    匹配规则：在"股票代码""证券代码""代码"等关键词后查找 6 位数字，
+    可能带 .SH/.SZ/.BJ 后缀。
+    """
+    if not text:
+        return None
+
+    keywords = r"(?:股票代码|证券代码|A股代码|代码|股票简称)"
+    patterns = [
+        rf"{keywords}\s*[：:]\s*(\d{{6}})(?:\.(SH|SZ|BJ))?",
+        rf"{keywords}\s*[：:]\s*(\d{{6}})",
+        rf"(\d{{6}})\.(SH|SZ|BJ)",
+    ]
+
+    for pat in patterns:
+        m = re.search(pat, text, re.IGNORECASE)
+        if m:
+            code = m.group(1)
+            suffix = m.group(2) if m.lastindex and m.lastindex >= 2 else None
+            return f"{code}.{suffix}" if suffix else code
+
+    return None
+
+
 def build_document_id_from_dir(input_dir: str) -> str:
     """从目录名提取 document_id"""
     return os.path.basename(os.path.normpath(input_dir))
-
-
-def sanitize_json_string(raw: str) -> str:
-    """清理模型返回的 JSON 字符串（去除 markdown 代码块标记等）"""
-    raw = raw.strip()
-    if raw.startswith("```json"):
-        raw = raw[7:]
-    if raw.startswith("```"):
-        raw = raw[3:]
-    if raw.endswith("```"):
-        raw = raw[:-3]
-    return raw.strip()
-
-
-def infer_exchange_and_board(md_text: str) -> Tuple[Optional[str], Optional[str]]:
-    """从文本中推断交易所和板块"""
-    text_upper = md_text[:5000].upper()
-
-    exchange = None
-    board = None
-
-    if "科创板" in text_upper or "上海证券交易所科创板" in text_upper:
-        exchange = "上交所"
-        board = "科创板"
-    elif "创业板" in text_upper or "深圳证券交易所创业板" in text_upper:
-        exchange = "深交所"
-        board = "创业板"
-    elif "主板" in text_upper:
-        if "上海" in text_upper[:2000]:
-            exchange = "上交所"
-        else:
-            exchange = "深交所"
-        board = "主板"
-    elif "北交所" in text_upper or "北京证券交易所" in text_upper:
-        exchange = "北交所"
-        board = "北交所"
-    elif "上交所" in text_upper or "上海证券交易所" in text_upper:
-        exchange = "上交所"
-    elif "深交所" in text_upper or "深圳证券交易所" in text_upper:
-        exchange = "深交所"
-
-    return exchange, board

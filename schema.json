@@ -25,7 +25,10 @@
         "招股说明书",
         "募集说明书",
         "上市公告书",
-        "补充披露文件"
+        "补充披露文件",
+        "H股公告",
+        "提示性公告",
+        "其他"
       ],
       "description": "文档类型"
     },
@@ -34,19 +37,19 @@
       "description": "发行人基础信息",
       "properties": {
         "issuer_name": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "公司名称"
         },
         "issuer_name_normalized": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "规范化公司名称"
         },
         "stock_code": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "股票代码"
         },
         "exchange": {
-          "type": "string",
+          "type": ["string", "null"],
           "enum": [
             "上交所",
             "深交所",
@@ -55,7 +58,7 @@
           "description": "交易所"
         },
         "board": {
-          "type": "string",
+          "type": ["string", "null"],
           "enum": [
             "主板",
             "创业板",
@@ -65,23 +68,23 @@
           "description": "上市板块"
         },
         "legal_representative": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "法定代表人"
         },
         "establishment_date": {
-          "type": "string",
+          "type": ["string", "null"],
           "format": "date",
           "description": "成立日期，格式YYYY-MM-DD"
         },
         "registered_capital": {
-          "type": "object",
+          "type": ["object", "null"],
           "description": "注册资本",
           "properties": {
             "value": {
-              "type": "number"
+              "type": ["number", "null"]
             },
             "unit": {
-              "type": "string",
+              "type": ["string", "null"],
               "enum": [
                 "万元",
                 "元"
@@ -89,7 +92,7 @@
               "default": "万元"
             },
             "currency": {
-              "type": "string",
+              "type": ["string", "null"],
               "enum": [
                 "CNY",
                 "USD",
@@ -100,19 +103,19 @@
           }
         },
         "registered_address": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "注册地址"
         },
         "industry": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "所属行业"
         },
         "main_business": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "主营业务"
         },
         "source_evidence_id": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "证据索引ID"
         }
       }
@@ -128,15 +131,15 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "股东名称"
               },
               "shareholding_ratio": {
-                "type": "number",
+                "type": ["number", "null"],
                 "description": "持股比例"
               },
               "direct_or_indirect": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "直接",
                   "间接"
@@ -144,7 +147,7 @@
                 "description": "直接持股或间接持股"
               },
               "source_evidence_id": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "证据索引ID"
               }
             }
@@ -157,11 +160,11 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "实际控制人名称"
               },
               "control_type": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "一致行动协议",
                   "表决权委托",
@@ -171,7 +174,7 @@
                 "description": "控制类型"
               },
               "source_evidence_id": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "证据索引ID"
               }
             }
@@ -189,19 +192,19 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "股东名称"
               },
               "shareholding_ratio": {
-                "type": "number",
+                "type": ["number", "null"],
                 "description": "持股比例"
               },
               "rank": {
-                "type": "integer",
+                "type": ["integer", "null"],
                 "description": "排名"
               },
               "source_evidence_id": {
-                "type": "string",
+                "type": ["string", "null"],
                 "description": "证据索引ID"
               }
             }
@@ -222,24 +225,24 @@
         ],
         "properties": {
           "field_name": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "字段名称"
           },
           "field_scope": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "字段口径/来源章节，如合并利润表、研发投入指标、募投项目预算等"
           },
           "period": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date",
             "description": "统计期间，格式YYYY-MM-DD"
           },
           "value": {
-            "type": "number",
+            "type": ["number", "null"],
             "description": "数值"
           },
           "unit": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "万元",
               "元",
@@ -249,7 +252,7 @@
             "description": "单位"
           },
           "currency": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "CNY",
               "USD",
@@ -259,11 +262,11 @@
             "description": "币种"
           },
           "chapter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "来源章节"
           },
           "source_evidence_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "证据索引ID"
           }
         }
@@ -276,11 +279,11 @@
         "type": "object",
         "properties": {
           "project_name": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "项目名称"
           },
           "project_type": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "扩产",
               "研发",
@@ -291,14 +294,14 @@
             "description": "项目类型"
           },
           "total_investment": {
-            "type": "object",
+            "type": ["object", "null"],
             "description": "项目总投资",
             "properties": {
               "value": {
-                "type": "number"
+                "type": ["number", "null"]
               },
               "unit": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "万元",
                   "元"
@@ -306,7 +309,7 @@
                 "default": "万元"
               },
               "currency": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "CNY",
                   "USD",
@@ -317,14 +320,14 @@
             }
           },
           "planned_use_of_raised_funds": {
-            "type": "object",
+            "type": ["object", "null"],
             "description": "拟使用募集资金",
             "properties": {
               "value": {
-                "type": "number"
+                "type": ["number", "null"]
               },
               "unit": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "万元",
                   "元"
@@ -332,7 +335,7 @@
                 "default": "万元"
               },
               "currency": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "CNY",
                   "USD",
@@ -343,15 +346,15 @@
             }
           },
           "construction_period": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "建设周期"
           },
           "implementation_entity": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "实施主体"
           },
           "source_evidence_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "证据索引ID"
           }
         }
@@ -364,11 +367,11 @@
         "type": "object",
         "properties": {
           "risk_title": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "风险因素标题"
           },
           "risk_category": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "财务风险",
               "经营风险",
@@ -381,11 +384,11 @@
             "description": "风险类别"
           },
           "risk_description": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "风险描述"
           },
           "severity_level": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "高",
               "中",
@@ -394,7 +397,7 @@
             "description": "严重程度"
           },
           "source_evidence_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "证据索引ID"
           }
         }
@@ -407,7 +410,7 @@
         "type": "object",
         "properties": {
           "item_type": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "行政处罚",
               "诉讼仲裁",
@@ -419,23 +422,23 @@
             "description": "事项类型"
           },
           "counter_party": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "交易对手方"
           },
           "occurrence_date": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date",
             "description": "发生日期"
           },
           "amount": {
-            "type": "object",
+            "type": ["object", "null"],
             "description": "金额",
             "properties": {
               "value": {
-                "type": "number"
+                "type": ["number", "null"]
               },
               "unit": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "万元",
                   "元"
@@ -443,7 +446,7 @@
                 "default": "万元"
               },
               "currency": {
-                "type": "string",
+                "type": ["string", "null"],
                 "enum": [
                   "CNY",
                   "USD",
@@ -454,16 +457,16 @@
             }
           },
           "description": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "描述"
           },
           "period": {
-            "type": "string",
+            "type": ["string", "null"],
             "format": "date",
             "description": "关联期间"
           },
           "source_evidence_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "证据索引ID"
           }
         }
@@ -484,11 +487,11 @@
             "description": "页码"
           },
           "chapter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "章节名称"
           },
           "block_type": {
-            "type": "string",
+            "type": ["string", "null"],
             "enum": [
               "text",
               "table",
@@ -499,11 +502,11 @@
             "description": "内容块类型"
           },
           "quote": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "原文引用"
           },
           "bbox": {
-            "type": "array",
+            "type": ["array", "null"],
             "items": {
               "type": "number"
             },

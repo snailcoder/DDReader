@@ -1,2 +1,4 @@
 *.pdf
-*pycache*
+*__pycache__*
+*.env
+*.pdf

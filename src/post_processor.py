@@ -1,5 +1,6 @@
 """后处理器：金额拆分、日期格式化、比例标准化、基础校验"""
 
+import json
 import re
 from typing import Any, Dict, List, Optional
 
@@ -231,9 +232,15 @@ def _process_amount_field(raw: Any) -> Optional[Dict[str, Any]]:
     if raw is None:
         return None
     if isinstance(raw, dict):
+        value = _to_float(raw.get("value"))
+        unit = raw.get("unit") or "万元"
+        if unit == "亿元":
+            if value is not None:
+                value = value * 10000
+            unit = "万元"
         return {
-            "value": _to_float(raw.get("value")),
-            "unit": raw.get("unit") or "万元",
+            "value": value,
+            "unit": unit,
             "currency": raw.get("currency") or "CNY",
         }
     if isinstance(raw, str):
@@ -256,8 +263,20 @@ def _to_float(val: Any) -> Optional[float]:
         return float(val)
     if isinstance(val, str):
         s = val.strip().replace(",", "")
-        # 去除可能的单位后缀
-        s = re.sub(r"[万元亿元元%]", "", s).strip()
+        # "1亿元" -> 10000.0, "1万元" -> 1.0
+        yi_match = re.search(r"([\d.]+)\s*亿元?", s)
+        if yi_match:
+            try:
+                return float(yi_match.group(1)) * 10000
+            except ValueError:
+                return None
+        wan_match = re.search(r"([\d.]+)\s*万", s)
+        if wan_match and "亿" not in s:
+            try:
+                return float(wan_match.group(1))
+            except ValueError:
+                return None
+        s = re.sub(r"[元%]", "", s).strip()
         try:
             return float(s)
         except ValueError:
@@ -301,4 +320,55 @@ def validate_result(result: Dict[str, Any]) -> List[str]:
             key = f"{name}_{scope}"
             field_names[key] = field_names.get(key, 0) + 1
 
+    # 5. 控股股东持股比例总和校验（应 ≤ 1）
+    total_ratio = sum(sh.get("shareholding_ratio", 0) or 0 for sh in shareholders)
+    if total_ratio > 1.01:  # 允许少量浮点误差
+        warnings.append(f"控股股东持股比例合计 {total_ratio:.2%}，超过 100%，请检查抽取结果")
+
+    # 6. 所有财务指标的 field_name 非空（schema 标记为 required）
+    for i, f in enumerate(financials):
+        if not f.get("field_name"):
+            warnings.append(f"财务指标第 {i+1} 条缺少 field_name（schema 标记为必填）")
+        unit = f.get("unit")
+        if unit and unit not in ("万元", "元", "%"):
+            warnings.append(f"财务指标 {f.get('field_name')} 的 unit='{unit}' 不在 schema 枚举内（允许：万元/元/%）")
+
+    # 7. source_evidence_id 非空校验（Day 1 修复后应全部覆盖）
+    evidence_fields = ["issuer_profile", "ownership_structure"]
+    list_fields = ["financials", "fund_raising_projects", "risk_items", "compliance_items"]
+    for field in evidence_fields:
+        data = result.get(field)
+        if isinstance(data, dict) and data:
+            if not data.get("source_evidence_id"):
+                warnings.append(f"{field} 缺少 source_evidence_id")
+    for field in list_fields:
+        items = result.get(field, [])
+        null_count = sum(1 for item in items if not item.get("source_evidence_id"))
+        if null_count > 0:
+            warnings.append(f"{field} 中有 {null_count}/{len(items)} 条缺少 source_evidence_id")
+
     return warnings
+
+
+def validate_against_schema(result: Dict[str, Any], schema_path: str = "schema.json") -> List[str]:
+    """验证输出是否符合 schema.json，返回错误列表"""
+    try:
+        import jsonschema
+    except ImportError:
+        return ["警告：未安装 jsonschema 包，跳过 schema 校验（pip install jsonschema）"]
+
+    from pathlib import Path
+    schema_file = Path(schema_path)
+    if not schema_file.exists():
+        return [f"警告：schema 文件不存在 {schema_path}，跳过校验"]
+
+    with open(schema_file, "r", encoding="utf-8") as f:
+        schema = json.load(f)
+
+    errors = []
+    validator = jsonschema.Draft7Validator(schema)
+    for error in validator.iter_errors(result):
+        path_str = ".".join(str(p) for p in error.absolute_path) if error.absolute_path else "<root>"
+        errors.append(f"{path_str}: {error.message}")
+
+    return errors
