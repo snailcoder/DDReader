@@ -1,4 +1,7 @@
 *.pdf
 *__pycache__*
 *.env
+
+# 覆盖全局 gitignore 的 data/* 规则，保留项目数据
+!data/mineru-output/
 *.pdf

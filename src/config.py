@@ -66,27 +66,31 @@ SYSTEM_PROMPT = """你是一位专业的金融文档信息抽取专家，擅长�
 6. 比例字段统一输出为标准小数（如 23.56% 输出为 0.2356）。
 7. 每个字段必须附带来源章节名称和原文证据片段。
 8. 输出必须是合法的 JSON，不要包含任何解释性文字。
+9. 标量字段（数字、字符串、布尔值）必须直接输出原始值，禁止包裹在 {"value": ...} 等对象中。只有明确要求对象格式的字段（如金额字段 registered_capital、total_investment）才使用对象。
+10. 所有列表字段必须输出 JSON 数组，即使只有一条记录也要用 [...] 包裹，禁止输出单个对象。
 """
 
 ISSUER_PROFILE_PROMPT = """请从以下招股说明书文本中抽取【发行人基础信息】。
 
 需要抽取的字段（全部必填，在文本中找到为止，不能留 null）：
 - issuer_name: 公司全称（中文完整名称）
-- issuer_name_normalized: 规范化公司名称（去掉"股份有限公司"、"有限公司"、"有限责任公司"等后缀的简称）
-- stock_code: 股票代码（如 688123.SH、300999.SZ、601318 等，在文本中搜索"股票代码""证券代码""代码"后的数字）
-- exchange: 交易所（上交所/深交所/北交所，根据文本中提到的交易所名称判断）
-- board: 上市板块（主板/创业板/科创板/北交所）
+- issuer_name_normalized: 规范化公司名称。去除"股份有限公司""有限公司""有限责任公司"等后缀，保留核心简称。例如"深圳北芯生命科技股份有限公司"→"深圳北芯生命科技"
+- stock_code: 股票代码（6 位数字，可能带 .SH/.SZ/.BJ 后缀）。在表格中搜索"股票代码""证券代码""A股代码""代码"等字段对应的数字
+- exchange: 交易所，必须是以下枚举值之一：上交所/深交所/北交所。如果原文写"上海证券交易所"则填"上交所"，"深圳证券交易所"则填"深交所"，"北京证券交易所"则填"北交所"
+- board: 上市板块，必须是以下枚举值之一：主板/创业板/科创板/北交所
 - legal_representative: 法定代表人（在"法定代表人"后面找）
-- establishment_date: 成立日期，格式 YYYY-MM-DD（在"成立日期""成立时间""设立日期"后找）
+- establishment_date: 成立日期，格式 YYYY-MM-DD（在"成立日期""成立时间""设立日期"后找，注意区分"有限公司成立日期"和"股份公司成立日期"，优先取有限公司成立日期）
 - registered_capital: 注册资本，格式 {"value": 数值, "unit": "万元", "currency": "CNY"}
-- registered_address: 注册地址（在"注册地址""住所"后找完整地址）
+- registered_address: 注册地址。在表格中搜索"注册地址""住所""注册地"等字段，取其后的完整地址。地址可能在表格的合并单元格中
 - industry: 所属行业（在"所属行业""行业分类"后找，如"计算机、通信和其他电子设备制造业"）
-- main_business: 主营业务（从"主营业务""经营范围""主要业务"等描述中提取）
+- main_business: 主营业务（从"主营业务""经营范围""主要业务"等描述中提取核心业务描述，限 100 字内）
 
 注意：
 - 所有字段都必须尽力查找，不允许随意设为 null。确实找不到再设为 null。
-- stock_code 格式为 6 位数字，可能带 .SH/.SZ 后缀。
-- registered_capital 的 value 必须是纯数字（不含逗号），unit 统一为"万元"（如原文是"亿元"则换算为万元）。
+- stock_code 在表格中搜索"股票代码""证券代码""A股代码"等关键词
+- registered_capital 的 value 必须是纯数字（不含逗号），unit 统一为"万元"（如原文是"亿元"则换算为万元）
+- registered_address 必须提取完整地址
+- issuer_name_normalized 必须从 issuer_name 去除后缀得到
 - 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
@@ -96,13 +100,21 @@ ISSUER_PROFILE_PROMPT = """请从以下招股说明书文本中抽取【发行�
 OWNERSHIP_PROMPT = """请从以下招股说明书文本中抽取【股权与控制关系】。
 
 需要抽取的字段：
-- controlling_shareholder: 控股股东列表，每个元素包含 name（名称）、shareholding_ratio（持股比例，小数）、direct_or_indirect（直接/间接）
+- controlling_shareholder: 控股股东列表，每个元素包含 name（名称）、shareholding_ratio（持股比例，纯数字小数如 0.25）、direct_or_indirect（"直接"或"间接"）
 - actual_controller: 实际控制人列表，每个元素包含 name（名称）、control_type（控制类型：一致行动协议/表决权委托/控股/其他）
 - concerted_action_flag: 是否存在一致行动关系（true/false）
-- top_shareholders: 前十大股东列表，每个元素包含 name（名称）、shareholding_ratio（持股比例，小数）、rank（排名）
+- top_shareholders: 前十大股东列表，每个元素包含 name（名称）、shareholding_ratio（持股比例，纯数字小数如 0.25）、rank（排名）、direct_or_indirect（"直接"或"间接"，如果是间接持股则填"间接"，否则填"直接"）
+
+关于 concerted_action_flag 的判断：
+- 搜索文本中"一致行动""一致行动协议""共同控制""协同行动"等关键词
+- 如果报告期内（包括当前和历史上）曾存在一致行动协议或共同控制安排，即使后来已解除，也应设为 true
+- 注意："不谋求控制权"的承诺不等于一致行动关系
+- 如果实际控制人通过多家公司合计控制股份，且存在一致行动协议，应设为 true
 
 注意：
+- shareholding_ratio 必须是纯数字（如 0.25），禁止输出 {"value": 0.25} 这样的对象格式。
 - 持股比例统一转换为标准小数（如 25.00% 转换为 0.25）。
+- controlling_shareholder、actual_controller、top_shareholders 必须输出 JSON 数组，即使只有一条记录也要用 [...] 包裹。
 - 若信息不完整，缺失字段设为 null。
 - 输出合法 JSON，不要 markdown 代码块标记。
 
@@ -123,9 +135,11 @@ FINANCIALS_PROMPT = """请从以下招股说明书文本中抽取【财务指标
 
 注意：
 - 金额必须拆分为数值和单位。如 "5,700.00 万元" → value=5700.0, unit="万元"。
+- value 必须是纯数字（如 5700.0），禁止输出 {"value": 5700, "unit": "万元"} 这样的对象。
 - 表格中的多个期间数据都要抽取，每个期间作为一条独立记录。
 - 同名指标在不同口径下要分别输出（如 合并利润表的净利润 vs 募投预算的研发费用）。
-- 输出合法 JSON 数组，不要 markdown 代码块标记。
+- 输出必须是 JSON 数组，即使只有一条记录也要用 [...] 包裹。
+- 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
 {chapter_text}
@@ -144,7 +158,8 @@ FUNDRAISING_PROMPT = """请从以下招股说明书文本中抽取【募投项�
 注意：
 - 金额必须拆分为数值和单位。
 - 每个募投项目独立输出一条记录。
-- 输出合法 JSON 数组，不要 markdown 代码块标记。
+- 输出必须是 JSON 数组，即使只有一个项目也要用 [...] 包裹。
+- 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
 {chapter_text}
@@ -160,7 +175,8 @@ RISK_PROMPT = """请从以下招股说明书文本中抽取【风险事项】。
 
 注意：
 - 只抽取明确列为"风险"的条目，不抽取一般经营分析。
-- 输出合法 JSON 数组，不要 markdown 代码块标记。
+- 输出必须是 JSON 数组，即使只有一条记录也要用 [...] 包裹。
+- 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
 {chapter_text}
@@ -180,7 +196,8 @@ COMPLIANCE_PROMPT = """请从以下招股说明书文本中抽取【合规事项
 
 注意：
 - 只抽取报告期内发生的、对发行人有实质影响的合规事项。
-- 输出合法 JSON 数组，不要 markdown 代码块标记。
+- 输出必须是 JSON 数组，即使只有一条记录也要用 [...] 包裹。
+- 输出合法 JSON，不要 markdown 代码块标记。
 
 文本内容：
 {chapter_text}

@@ -203,6 +203,14 @@
                 "type": ["integer", "null"],
                 "description": "排名"
               },
+              "direct_or_indirect": {
+                "type": ["string", "null"],
+                "enum": [
+                  "直接",
+                  "间接"
+                ],
+                "description": "直接持股或间接持股"
+              },
               "source_evidence_id": {
                 "type": ["string", "null"],
                 "description": "证据索引ID"
