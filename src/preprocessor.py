@@ -64,17 +64,17 @@ def _merge_page_content(blocks: List[Dict]) -> str:
         block_type = block.get("type", "text")
         text = block.get("text", "").strip()
 
+        if block_type == "table":
+            html = block.get("html", "") or block.get("table_body", "")
+            if html:
+                text = html
+
         if not text:
             continue
 
         if block_type == "text":
             text_level = block.get("text_level")
             text = _convert_text_level_to_markdown(text, text_level)
-
-        if block_type == "table":
-            html = block.get("html", "")
-            if html:
-                text = html
 
         parts.append(text)
 

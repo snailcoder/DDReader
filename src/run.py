@@ -24,11 +24,12 @@ def is_document_dir(directory: Path) -> bool:
 
 
 def find_document_dirs(input_dir: Path) -> List[Path]:
-    """查找输入目录下的所有文档目录（只遍历一层子目录）"""
-    doc_dirs = []
-    for item in input_dir.iterdir():
-        if item.is_dir() and is_document_dir(item):
-            doc_dirs.append(item)
+    """查找输入目录下所有包含 content_list.json 的文档目录（递归）"""
+    doc_dirs = set()
+    for item in input_dir.rglob("*_content_list.json"):
+        doc_dirs.add(item.parent)
+    for item in input_dir.rglob("content_list.json"):
+        doc_dirs.add(item.parent)
     return sorted(doc_dirs)
 
 
