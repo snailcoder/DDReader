@@ -137,6 +137,7 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
     _inferred_exchange = result["issuer_profile"].get("exchange")
     _inferred_board = result["issuer_profile"].get("board")
     _inferred_stock_code = result["issuer_profile"].get("stock_code")
+    _inferred_registered_address = result["issuer_profile"].get("registered_address")
 
     result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
     result["ownership_structure"] = process_ownership_structure(extracted.get("ownership_structure"))
@@ -152,6 +153,8 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
         result["issuer_profile"]["board"] = _inferred_board
     if _inferred_stock_code and not result["issuer_profile"].get("stock_code"):
         result["issuer_profile"]["stock_code"] = _inferred_stock_code
+    if _inferred_registered_address and not result["issuer_profile"].get("registered_address"):
+        result["issuer_profile"]["registered_address"] = _inferred_registered_address
 
     # 8. 构建证据索引
     print("[Pipeline] 构建证据索引...")
@@ -284,6 +287,7 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
     _inferred_exchange = result["issuer_profile"].get("exchange")
     _inferred_board = result["issuer_profile"].get("board")
     _inferred_stock_code = result["issuer_profile"].get("stock_code")
+    _inferred_registered_address = result["issuer_profile"].get("registered_address")
 
     result["issuer_profile"] = process_issuer_profile(extracted.get("issuer_profile"))
     result["ownership_structure"] = process_ownership_structure(extracted.get("ownership_structure"))
@@ -299,6 +303,8 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
         result["issuer_profile"]["board"] = _inferred_board
     if _inferred_stock_code and not result["issuer_profile"].get("stock_code"):
         result["issuer_profile"]["stock_code"] = _inferred_stock_code
+    if _inferred_registered_address and not result["issuer_profile"].get("registered_address"):
+        result["issuer_profile"]["registered_address"] = _inferred_registered_address
 
     # 8. 构建证据索引
     print("[Pipeline] 构建证据索引...")

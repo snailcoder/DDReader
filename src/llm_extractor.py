@@ -9,6 +9,50 @@ from .llm_client import AsyncLLMClient, LLMClient
 
 CHUNK_MAX_CHARS = 120000  # 适配 256K 上下文窗口
 
+
+def _merge_object_results(results: List[Dict]) -> Optional[Dict]:
+    """合并多个 chunk 返回的 dict 结果（取各字段第一个非空值，数组字段 extend+去重）"""
+    if not results:
+        return None
+    valid = [r for r in results if isinstance(r, dict)]
+    if not valid:
+        return None
+    if len(valid) == 1:
+        return valid[0]
+
+    merged = {}
+    for r in valid:
+        for k, v in r.items():
+            if k not in merged:
+                merged[k] = v
+            elif isinstance(v, list) and isinstance(merged[k], list):
+                # 数组字段：extend + 按 name/project_name 等去重
+                merged[k].extend(v)
+            elif merged[k] in (None, "", {}, []) and v not in (None, "", {}, []):
+                merged[k] = v
+
+    # 数组字段去重
+    for k, v in merged.items():
+        if isinstance(v, list) and len(v) > 1:
+            seen = set()
+            deduped = []
+            for item in v:
+                if isinstance(item, dict):
+                    # 用 name/project_name/field_name 等作为去重键
+                    name_key = item.get("name") or item.get("project_name") or item.get("field_name") or json.dumps(item, ensure_ascii=False, sort_keys=True)
+                    if name_key not in seen:
+                        seen.add(name_key)
+                        deduped.append(item)
+                else:
+                    if item not in seen:
+                        seen.add(item)
+                        deduped.append(item)
+            merged[k] = deduped
+
+    if any(v not in (None, "", [], {}) for v in merged.values()):
+        return merged
+    return None
+
 # 字段类别到章节关键词的映射
 FIELD_CHAPTER_MAPPING = {
     "issuer_profile": {
@@ -221,12 +265,12 @@ class LLMExtractor:
 
         # 合并结果
         if is_object:
-            for r in reversed(all_results):
-                if r and isinstance(r, dict) and any(v not in (None, "", [], {}) for v in r.values()):
-                    print(f"[LLM] {field_category} 抽取完成 | 合并后 1 个对象")
-                    return r
-            print(f"[LLM] {field_category} 抽取完成 | 无有效结果")
-            return None
+            merged = _merge_object_results(all_results)
+            if merged:
+                print(f"[LLM] {field_category} 抽取完成 | 合并后 1 个对象")
+            else:
+                print(f"[LLM] {field_category} 抽取完成 | 无有效结果")
+            return merged
 
         # 列表型：去重
         seen = set()
@@ -294,12 +338,12 @@ class LLMExtractor:
         valid_results = flattened
 
         if is_object:
-            for r in reversed(valid_results):
-                if r and isinstance(r, dict) and any(v not in (None, "", [], {}) for v in r.values()):
-                    print(f"[LLM] {field_category} 抽取完成 | 合并后 1 个对象")
-                    return r
-            print(f"[LLM] {field_category} 抽取完成 | 无有效结果")
-            return None
+            merged = _merge_object_results(valid_results)
+            if merged:
+                print(f"[LLM] {field_category} 抽取完成 | 合并后 1 个对象")
+            else:
+                print(f"[LLM] {field_category} 抽取完成 | 无有效结果")
+            return merged
 
         seen = set()
         deduped = []

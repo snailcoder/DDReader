@@ -174,6 +174,17 @@ def _process_controller_list(items: List[Any]) -> List[Dict[str, Any]]:
     return result
 
 
+_UNIT_MAP = {
+    "元/股": "元",
+    "百分比": "%",
+    "万股": "万元",
+    "亿股": "万元",
+    "万": "万元",
+    "元/万元": "万元",
+}
+_VALID_UNITS = {"万元", "元", "%"}
+
+
 def process_financials(raw: Any) -> List[Dict[str, Any]]:
     """后处理财务指标列表"""
     raw = _coerce_to_list(raw)
@@ -226,6 +237,11 @@ def process_financials(raw: Any) -> List[Dict[str, Any]]:
             processed["value"] = None
             processed["unit"] = unit
             processed["currency"] = currency
+
+        # unit 枚举校验与映射
+        u = processed["unit"]
+        if u and u not in _VALID_UNITS:
+            processed["unit"] = _UNIT_MAP.get(u, "万元")
 
         result.append(processed)
     return result

@@ -254,10 +254,25 @@ def attach_evidence_ids(
         return matched
 
     # 对象型字段（issuer_profile, ownership_structure）
-    for obj_field in ("issuer_profile", "ownership_structure"):
-        ev_ids = _get_ev_ids_for_field(obj_field)
-        if ev_ids and isinstance(result.get(obj_field), dict):
-            result[obj_field]["source_evidence_id"] = ev_ids[0]
+    # issuer_profile: 顶层赋值 source_evidence_id
+    ev_ids = _get_ev_ids_for_field("issuer_profile")
+    if ev_ids and isinstance(result.get("issuer_profile"), dict):
+        result["issuer_profile"]["source_evidence_id"] = ev_ids[0]
+
+    # ownership_structure: 不在顶层赋值，改为对子数组元素逐项关联
+    ownership = result.get("ownership_structure")
+    if isinstance(ownership, dict):
+        for sub_field in ("controlling_shareholder", "actual_controller", "top_shareholders"):
+            items = ownership.get(sub_field, [])
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                if isinstance(item, dict):
+                    ev_id = _find_best_evidence_for_item(
+                        item, "ownership_structure", evidence_index,
+                        chapter_to_ev_ids, field_chapter_keywords,
+                    )
+                    item["source_evidence_id"] = ev_id
 
     # 列表型字段：逐项内容匹配
     for list_field in ("financials", "fund_raising_projects", "risk_items", "compliance_items"):
