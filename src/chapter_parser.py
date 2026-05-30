@@ -63,7 +63,7 @@ def _find_toc_pages(preprocessed: List[Dict]) -> List[int]:
             if re.search(r"第[一二三四五六七八九十]+[节章]", text):
                 # 检查是否是目录中的条目还是正文开始
                 # 如果页面内容较少，可能是目录；如果内容较多，可能是正文
-                if len(text) > 2000:
+                if len(text) > 1000:
                     toc_pages.pop()  # 最后一页不是目录
                     break
 

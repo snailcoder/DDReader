@@ -86,7 +86,7 @@ def extract_section_blocks(section: Dict) -> List[Dict]:
 
 
 def build_section_text_with_evidence(blocks: List[Dict],
-                                     max_chars: int = 15000) -> Tuple[str, List[Dict]]:
+                                     max_chars: int = 50000) -> Tuple[str, List[Dict]]:
     """将文本块聚合为一段文本，同时返回证据列表
 
     Args:

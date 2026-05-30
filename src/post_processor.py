@@ -7,6 +7,48 @@ from typing import Any, Dict, List, Optional
 from . import utils
 
 
+# exchange 和 board 的枚举值映射
+_EXCHANGE_MAP = {
+    "上海证券交易所": "上交所",
+    "深圳证券交易所": "深交所",
+    "北京证券交易所": "北交所",
+    "上交所": "上交所",
+    "深交所": "深交所",
+    "北交所": "北交所",
+}
+
+_BOARD_MAP = {
+    "主板": "主板",
+    "创业板": "创业板",
+    "科创板": "科创板",
+    "北交所": "北交所",
+}
+
+# 公司名称后缀，用于生成 issuer_name_normalized
+_SUFFIXES = ["股份有限公司", "有限责任公司", "有限公司", "公司"]
+
+# 常见 LLM 幻觉占位符（用于过滤伪造的股东/人物数据）
+_HALLUCINATION_NAMES = {
+    "张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十",
+    "张三丰", "李四光", "王小明", "李华", "小明", "小红",
+    "test", "Test", "TEST", "示例", "示例公司", "某某",
+    "某公司", "某人", "甲", "乙", "丙", "丁",
+    "Company A", "Company B", "Person A", "Person B",
+    "股东A", "股东B", "股东C",
+}
+
+
+def _normalize_issuer_name(name: str) -> Optional[str]:
+    """从公司全称去除后缀，生成规范化简称"""
+    if not name:
+        return None
+    for suffix in _SUFFIXES:
+        if name.endswith(suffix):
+            normalized = name[: -len(suffix)]
+            return normalized if normalized else None
+    return None
+
+
 def process_issuer_profile(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     """后处理发行人基础信息"""
     if not raw or not isinstance(raw, dict):
@@ -53,6 +95,31 @@ def process_issuer_profile(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     else:
         result["registered_capital"] = {"value": None, "unit": "万元", "currency": "CNY"}
 
+    # issuer_name_normalized fallback：从 issuer_name 自动生成
+    if not result.get("issuer_name_normalized") and result.get("issuer_name"):
+        result["issuer_name_normalized"] = _normalize_issuer_name(result["issuer_name"])
+
+    # exchange 枚举映射
+    exchange_raw = result.get("exchange")
+    if exchange_raw and exchange_raw in _EXCHANGE_MAP:
+        result["exchange"] = _EXCHANGE_MAP[exchange_raw]
+    elif exchange_raw and exchange_raw not in ("上交所", "深交所", "北交所"):
+        # 尝试模糊匹配
+        for key, val in _EXCHANGE_MAP.items():
+            if key in exchange_raw:
+                result["exchange"] = val
+                break
+
+    # board 枚举映射
+    board_raw = result.get("board")
+    if board_raw and board_raw in _BOARD_MAP:
+        result["board"] = _BOARD_MAP[board_raw]
+    elif board_raw and board_raw not in ("主板", "创业板", "科创板", "北交所"):
+        for key, val in _BOARD_MAP.items():
+            if key in board_raw:
+                result["board"] = val
+                break
+
     return result
 
 
@@ -76,47 +143,79 @@ def process_ownership_structure(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]
 
 
 def _process_shareholder_list(items: List[Any]) -> List[Dict[str, Any]]:
-    """处理股东/前十大股东列表"""
+    """处理股东/前十大股东列表（含幻觉过滤和 ratio 校验）"""
     if not items:
         return []
     result = []
     for item in items:
         if not isinstance(item, dict):
             continue
+        name = item.get("name") or None
+
+        # 幻觉检测：过滤常见 LLM 占位符
+        if name and name in _HALLUCINATION_NAMES:
+            continue
+
         ratio = item.get("shareholding_ratio")
-        if isinstance(ratio, str):
+        if isinstance(ratio, dict):
+            ratio = _to_float(ratio.get("value"))
+        elif isinstance(ratio, str):
             ratio = utils.parse_ratio(ratio)
         elif isinstance(ratio, (int, float)):
             if ratio > 1:
                 ratio = round(ratio / 100, 6)
+
+        # ratio 合理性校验：0 <= ratio <= 1
+        if ratio is not None and (ratio < 0 or ratio > 1):
+            ratio = None
+
         result.append({
-            "name": item.get("name") or None,
+            "name": name,
             "shareholding_ratio": ratio,
             "direct_or_indirect": item.get("direct_or_indirect") or None,
             "rank": item.get("rank") or None,
             "source_evidence_id": item.get("source_evidence_id") or None,
         })
+
+    # top_shareholders 按 rank 排序（如果有的话）
+    result.sort(key=lambda x: x.get("rank") or 999)
     return result
 
 
 def _process_controller_list(items: List[Any]) -> List[Dict[str, Any]]:
-    """处理实际控制人列表"""
+    """处理实际控制人列表（含幻觉过滤）"""
     if not items:
         return []
     result = []
     for item in items:
         if not isinstance(item, dict):
             continue
+        name = item.get("name") or None
+        # 幻觉检测
+        if name and name in _HALLUCINATION_NAMES:
+            continue
         result.append({
-            "name": item.get("name") or None,
+            "name": name,
             "control_type": item.get("control_type") or None,
             "source_evidence_id": item.get("source_evidence_id") or None,
         })
     return result
 
 
-def process_financials(raw: List[Any]) -> List[Dict[str, Any]]:
+_UNIT_MAP = {
+    "元/股": "元",
+    "百分比": "%",
+    "万股": "万元",
+    "亿股": "万元",
+    "万": "万元",
+    "元/万元": "万元",
+}
+_VALID_UNITS = {"万元", "元", "%"}
+
+
+def process_financials(raw: Any) -> List[Dict[str, Any]]:
     """后处理财务指标列表"""
+    raw = _coerce_to_list(raw)
     if not raw:
         return []
     result = []
@@ -140,6 +239,8 @@ def process_financials(raw: List[Any]) -> List[Dict[str, Any]]:
 
         # value + unit
         val = item.get("value")
+        if isinstance(val, dict):
+            val = _to_float(val.get("value"))
         unit = item.get("unit") or "万元"
         currency = item.get("currency") or "CNY"
 
@@ -165,12 +266,24 @@ def process_financials(raw: List[Any]) -> List[Dict[str, Any]]:
             processed["unit"] = unit
             processed["currency"] = currency
 
+        # unit 枚举校验与映射
+        u = processed["unit"]
+        if u and u not in _VALID_UNITS:
+            processed["unit"] = _UNIT_MAP.get(u, "万元")
+
+        # 比例值校正：unit="%" 但 value 在 (0,1) 区间时，自动 ×100
+        if processed["unit"] == "%" and processed["value"] is not None:
+            v = processed["value"]
+            if 0 < v < 1:
+                processed["value"] = round(v * 100, 2)
+
         result.append(processed)
     return result
 
 
-def process_fund_raising_projects(raw: List[Any]) -> List[Dict[str, Any]]:
+def process_fund_raising_projects(raw: Any) -> List[Dict[str, Any]]:
     """后处理募投项目列表"""
+    raw = _coerce_to_list(raw)
     if not raw:
         return []
     result = []
@@ -189,8 +302,9 @@ def process_fund_raising_projects(raw: List[Any]) -> List[Dict[str, Any]]:
     return result
 
 
-def process_risk_items(raw: List[Any]) -> List[Dict[str, Any]]:
+def process_risk_items(raw: Any) -> List[Dict[str, Any]]:
     """后处理风险事项列表"""
+    raw = _coerce_to_list(raw)
     if not raw:
         return []
     result = []
@@ -207,8 +321,9 @@ def process_risk_items(raw: List[Any]) -> List[Dict[str, Any]]:
     return result
 
 
-def process_compliance_items(raw: List[Any]) -> List[Dict[str, Any]]:
+def process_compliance_items(raw: Any) -> List[Dict[str, Any]]:
     """后处理合规事项列表"""
+    raw = _coerce_to_list(raw)
     if not raw:
         return []
     result = []
@@ -253,6 +368,15 @@ def _process_amount_field(raw: Any) -> Optional[Dict[str, Any]]:
     if isinstance(raw, (int, float)):
         return {"value": float(raw), "unit": "万元", "currency": "CNY"}
     return None
+
+
+def _coerce_to_list(val: Any) -> list:
+    """将非 list 输入（dict / None 等）安全转为 list，防止迭代 dict keys"""
+    if isinstance(val, list):
+        return val
+    if isinstance(val, dict):
+        return [val]
+    return []
 
 
 def _to_float(val: Any) -> Optional[float]:
