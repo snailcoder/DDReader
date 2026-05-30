@@ -43,7 +43,7 @@ FIELD_KEYWORDS = {
 _STATIC_KEYWORDS = {
     "issuer_profile": ["发行人基本情况", "概览", "业务与技术"],
     "ownership_structure": ["发行人基本情况", "公司治理与独立性", "概览"],
-    "financials": ["财务会计信息", "业务与技术", "管理层分析"],
+    "financials": ["财务会计信息", "财务报表", "管理层分析"],
     "fund_raising_projects": ["募集资金运用", "投资者保护", "未来发展规划"],
     "risk_items": ["风险因素", "重大事项提示"],
     "compliance_items": ["其他重要事项", "公司治理与独立性", "投资者保护"],

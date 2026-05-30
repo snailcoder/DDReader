@@ -64,7 +64,7 @@ FIELD_CHAPTER_MAPPING = {
         "is_object": True,
     },
     "financials": {
-        "keywords": ["财务会计信息", "业务与技术", "管理层分析"],
+        "keywords": ["财务会计信息", "财务报表", "管理层分析"],
         "is_object": False,
     },
     "fund_raising_projects": {

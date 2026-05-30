@@ -2,6 +2,7 @@
 
 import os
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -251,5 +252,10 @@ def infer_stock_code(text: str) -> Optional[str]:
 
 
 def build_document_id_from_dir(input_dir: str) -> str:
-    """从目录名提取 document_id"""
+    """从目录中 content_list 文件名提取 document_id，保持与 content_list 前缀一致"""
+    d = Path(input_dir)
+    matches = list(d.glob("*_content_list.json"))
+    if matches:
+        # 取第一个匹配，去掉 _content_list.json 后缀
+        return matches[0].stem.removesuffix("_content_list")
     return os.path.basename(os.path.normpath(input_dir))

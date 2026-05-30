@@ -27,6 +27,16 @@ _BOARD_MAP = {
 # 公司名称后缀，用于生成 issuer_name_normalized
 _SUFFIXES = ["股份有限公司", "有限责任公司", "有限公司", "公司"]
 
+# 常见 LLM 幻觉占位符（用于过滤伪造的股东/人物数据）
+_HALLUCINATION_NAMES = {
+    "张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十",
+    "张三丰", "李四光", "王小明", "李华", "小明", "小红",
+    "test", "Test", "TEST", "示例", "示例公司", "某某",
+    "某公司", "某人", "甲", "乙", "丙", "丁",
+    "Company A", "Company B", "Person A", "Person B",
+    "股东A", "股东B", "股东C",
+}
+
 
 def _normalize_issuer_name(name: str) -> Optional[str]:
     """从公司全称去除后缀，生成规范化简称"""
@@ -133,13 +143,19 @@ def process_ownership_structure(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]
 
 
 def _process_shareholder_list(items: List[Any]) -> List[Dict[str, Any]]:
-    """处理股东/前十大股东列表"""
+    """处理股东/前十大股东列表（含幻觉过滤和 ratio 校验）"""
     if not items:
         return []
     result = []
     for item in items:
         if not isinstance(item, dict):
             continue
+        name = item.get("name") or None
+
+        # 幻觉检测：过滤常见 LLM 占位符
+        if name and name in _HALLUCINATION_NAMES:
+            continue
+
         ratio = item.get("shareholding_ratio")
         if isinstance(ratio, dict):
             ratio = _to_float(ratio.get("value"))
@@ -148,26 +164,38 @@ def _process_shareholder_list(items: List[Any]) -> List[Dict[str, Any]]:
         elif isinstance(ratio, (int, float)):
             if ratio > 1:
                 ratio = round(ratio / 100, 6)
+
+        # ratio 合理性校验：0 <= ratio <= 1
+        if ratio is not None and (ratio < 0 or ratio > 1):
+            ratio = None
+
         result.append({
-            "name": item.get("name") or None,
+            "name": name,
             "shareholding_ratio": ratio,
             "direct_or_indirect": item.get("direct_or_indirect") or None,
             "rank": item.get("rank") or None,
             "source_evidence_id": item.get("source_evidence_id") or None,
         })
+
+    # top_shareholders 按 rank 排序（如果有的话）
+    result.sort(key=lambda x: x.get("rank") or 999)
     return result
 
 
 def _process_controller_list(items: List[Any]) -> List[Dict[str, Any]]:
-    """处理实际控制人列表"""
+    """处理实际控制人列表（含幻觉过滤）"""
     if not items:
         return []
     result = []
     for item in items:
         if not isinstance(item, dict):
             continue
+        name = item.get("name") or None
+        # 幻觉检测
+        if name and name in _HALLUCINATION_NAMES:
+            continue
         result.append({
-            "name": item.get("name") or None,
+            "name": name,
             "control_type": item.get("control_type") or None,
             "source_evidence_id": item.get("source_evidence_id") or None,
         })
@@ -242,6 +270,12 @@ def process_financials(raw: Any) -> List[Dict[str, Any]]:
         u = processed["unit"]
         if u and u not in _VALID_UNITS:
             processed["unit"] = _UNIT_MAP.get(u, "万元")
+
+        # 比例值校正：unit="%" 但 value 在 (0,1) 区间时，自动 ×100
+        if processed["unit"] == "%" and processed["value"] is not None:
+            v = processed["value"]
+            if 0 < v < 1:
+                processed["value"] = round(v * 100, 2)
 
         result.append(processed)
     return result
