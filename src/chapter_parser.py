@@ -104,47 +104,74 @@ def _parse_toc_content(preprocessed: List[Dict], toc_pages: List[int]) -> List[D
             continue
 
         # 尝试匹配大章标题
-        # 格式1：第X节 标题 ... 页码
-        # 格式2：第X节 标题...页码（点号连接）
+        # 格式1：第X节 标题 ... 页码（点线或空格分隔）
+        # 使用 .+? 而非 \S+? 以捕获完整多词标题（如"财务会计信息与管理层分析"）
         chapter_match = re.search(
-            r"(第[一二三四五六七八九十百千\d]+[节章]\s*[、.]?\s*\S+?)[\s.．·\t]{1,}(\d+)",
+            r"(第[一二三四五六七八九十百千\d]+[节章].+?)[\s.．·\t·　]{2,}(\d+)\s*$",
             line
         )
         if not chapter_match:
-            # 尝试另一种格式：标题后直接跟页码
             chapter_match = re.search(
-                r"(第[一二三四五六七八九十百千\d]+[节章]\s*[、.]?\s*\S+?)\s+(\d+)$",
+                r"(第[一二三四五六七八九十百千\d]+[节章].+?)\s{2,}(\d+)\s*$",
                 line
             )
-        
+        if not chapter_match:
+            # 最后兜底：标题后直接跟空格+页码结尾
+            chapter_match = re.search(
+                r"(第[一二三四五六七八九十百千\d]+[节章].+?)\s+(\d+)$",
+                line
+            )
+        # 兜底2：页码缺失（mineru 未识别出页码），行中仅有"第X节 标题"加点线
+        if not chapter_match:
+            chapter_match_no_page = re.search(
+                r"(第[一二三四五六七八九十百千\d]+[节章][^#\n]+?)[\s.．·　]*$",
+                line
+            )
+        else:
+            chapter_match_no_page = None
+
         if chapter_match:
             heading = chapter_match.group(1).strip()
             page_idx = int(chapter_match.group(2))
+        elif chapter_match_no_page:
+            heading = chapter_match_no_page.group(1).strip()
+            # 去掉末尾残留的点线符号
+            heading = re.sub(r"[\s.．·　]+$", "", heading)
+            page_idx = 0  # 页码未知，置 0
+        else:
+            heading = None
+            page_idx = None
 
-            # 校验：标题中应该包含常见关键词
-            if any(kw in heading for kw in COMMON_CHAPTER_KEYWORDS):
+        if heading is not None:
+            # 校验：标题中应该包含常见关键词（对比前去除空格，兼容 OCR 字间空格）
+            heading_compact = heading.replace(" ", "").replace("\u3000", "")
+            if any(kw in heading_compact for kw in COMMON_CHAPTER_KEYWORDS):
                 if current_chapter:
                     chapters.append(current_chapter)
                 current_chapter = {
-                    "heading": heading,
+                    "heading": heading_compact if chapter_match_no_page else heading,
                     "page_idx": page_idx,
                     "sections": [],
                 }
                 continue
 
         # 尝试匹配小节标题
-        # 格式：一、标题 ... 页码
+        # 格式：一、标题 ... 页码（同样用 .+? 捕获完整标题）
         section_match = re.search(
-            r"([一二三四五六七八九十百千]+[、．.]\s*\S+?)[\s.．·\t]{1,}(\d+)",
+            r"([一二三四五六七八九十百千]+[、．.].+?)[\s.．·\t·　]{2,}(\d+)\s*$",
             line
         )
         if not section_match:
-            # 尝试另一种格式：标题后直接跟页码
             section_match = re.search(
-                r"([一二三四五六七八九十百千]+[、．.]\s*\S+?)\s+(\d+)$",
+                r"([一二三四五六七八九十百千]+[、．.].+?)\s{2,}(\d+)\s*$",
                 line
             )
-        
+        if not section_match:
+            section_match = re.search(
+                r"([一二三四五六七八九十百千]+[、．.].+?)\s+(\d+)$",
+                line
+            )
+
         if section_match and current_chapter:
             heading = section_match.group(1).strip()
             page_idx = int(section_match.group(2))
@@ -298,50 +325,45 @@ def _split_page_by_sections(page_text: str, page_idx: int,
     if not section_headings:
         return [{"text": page_text, "text_level": 0, "page_idx": page_idx}]
 
-    # 构建匹配模式
-    # 匹配 # 标题 或 标题（没有#前缀但以中文数字开头）
-    parts = []
-    last_end = 0
-
-    # 在文本中查找所有小节标题的位置
+    # 先找出所有标题在文本中的实际位置，再按位置升序排列
+    # 避免按 TOC 顺序迭代导致 last_end 游标跳过内容
+    found: List[Tuple[int, int, str]] = []  # (start, end, matched_text)
     for heading in section_headings:
-        # 尝试多种格式匹配
         patterns = [
-            re.escape(f"# {heading}"),  # # 一、xxx
-            re.escape(f"## {heading}"),  # ## 一、xxx
-            re.escape(heading),  # 一、xxx
+            re.escape(f"# {heading}"),
+            re.escape(f"## {heading}"),
+            re.escape(heading),
         ]
-
         for pattern in patterns:
-            match = re.search(pattern, page_text[last_end:])
+            match = re.search(pattern, page_text)
             if match:
-                # 标题前的内容
-                before_text = page_text[last_end:last_end + match.start()].strip()
-                if before_text:
-                    parts.append({
-                        "text": before_text,
-                        "text_level": 0,
-                        "page_idx": page_idx,
-                    })
-
-                # 标题本身
-                parts.append({
-                    "text": match.group().strip(),
-                    "text_level": 2,
-                    "page_idx": page_idx,
-                })
-
-                last_end = last_end + match.end()
+                found.append((match.start(), match.end(), match.group().strip()))
                 break
 
-    # 最后剩余的内容
-    remaining = page_text[last_end:].strip()
+    if not found:
+        return [{"text": page_text, "text_level": 0, "page_idx": page_idx}]
+
+    # 按文本位置升序排列（去除重叠，保留最早出现的）
+    found.sort(key=lambda x: x[0])
+    deduped: List[Tuple[int, int, str]] = []
+    last_end = 0
+    for start, end, matched in found:
+        if start >= last_end:
+            deduped.append((start, end, matched))
+            last_end = end
+
+    parts: List[Dict] = []
+    prev_end = 0
+    for start, end, matched in deduped:
+        before = page_text[prev_end:start].strip()
+        if before:
+            parts.append({"text": before, "text_level": 0, "page_idx": page_idx})
+        parts.append({"text": matched, "text_level": 2, "page_idx": page_idx})
+        prev_end = end
+
+    remaining = page_text[prev_end:].strip()
     if remaining:
-        parts.append({
-            "text": remaining,
-            "text_level": 0,
-            "page_idx": page_idx,
-        })
+        parts.append({"text": remaining, "text_level": 0, "page_idx": page_idx})
 
     return parts if parts else [{"text": page_text, "text_level": 0, "page_idx": page_idx}]
 
@@ -446,33 +468,49 @@ def _split_section_by_subsections(text_list: List[Dict],
     Returns:
         子节列表
     """
-    # 合并所有文本
-    full_text = "\n".join(item["text"] for item in text_list)
+    if not text_list:
+        return []
+
+    # 构建字符偏移 → page_idx 的映射，确保每个子节使用正确的页码
+    page_breaks: List[Tuple[int, int]] = []  # [(起始偏移, page_idx), ...]
+    parts_for_join: List[str] = []
+    offset = 0
+    for item in text_list:
+        t = item.get("text", "")
+        page_breaks.append((offset, item.get("page_idx", 0)))
+        parts_for_join.append(t)
+        offset += len(t) + 1  # +1 对应 "\n" 分隔符
+
+    full_text = "\n".join(parts_for_join)
+
+    def _get_page_for_offset(pos: int) -> int:
+        """根据字符位置找到对应的 page_idx"""
+        page_idx = page_breaks[0][1] if page_breaks else 0
+        for off, pidx in page_breaks:
+            if pos >= off:
+                page_idx = pidx
+            else:
+                break
+        return page_idx
 
     if method == "regex":
-        # 用正则查找子节标题
         subsection_positions = _find_subsections_by_regex(full_text)
     else:
-        # 模型方法（TODO: 实现模型识别）
         subsection_positions = _find_subsections_by_regex(full_text)
 
     if not subsection_positions:
         return []
 
-    # 根据子节标题位置切分文本
+    # 根据子节标题位置切分文本，并为每个子节分配准确的页码
     subsections = []
     for i, (pos, heading) in enumerate(subsection_positions):
-        # 确定子节文本范围
         if i + 1 < len(subsection_positions):
             end_pos = subsection_positions[i + 1][0]
         else:
             end_pos = len(full_text)
 
         subsection_text = full_text[pos:end_pos].strip()
-
-        # 确定该子节所在的页码
-        # 简单方法：使用第一个 text_list 元素的页码
-        page_idx = text_list[0]["page_idx"] if text_list else 0
+        page_idx = _get_page_for_offset(pos)
 
         subsections.append({
             "heading": heading,
@@ -504,6 +542,70 @@ def split_subsections(section: Dict, method: str = "regex") -> Dict:
     section["subsections"] = subsections
 
     return section
+
+
+def _fallback_chapter_split(preprocessed: List[Dict]) -> List[Dict]:
+    """当 TOC 解析失败时，从正文中识别大章标题进行 fallback 切分
+
+    识别策略：
+    - mineru 产出的标题行带有 # 前缀（text_level > 0 → _convert_text_level_to_markdown 添加的）
+    - 直接扫描 "第X节/章" 格式的行作为大章边界
+
+    Returns:
+        大章列表（结构与 split_chapters 输出一致，含 page_list）
+    """
+    if not preprocessed:
+        return []
+
+    # 匹配带或不带 # 前缀的大章标题行
+    HEADING_RE = re.compile(
+        r"(?:^|\n)#{0,3}\s*(第[一二三四五六七八九十百千\d]+[节章]\s*\S+[^\n]*)"
+    )
+
+    chapters: List[Dict] = []
+    current_chapter: Optional[Dict] = None
+
+    for page in preprocessed:
+        text = page["text"]
+        page_idx = page["page_idx"]
+
+        matches = list(HEADING_RE.finditer(text))
+        if not matches:
+            if current_chapter is not None:
+                current_chapter["page_list"].append({"text": text, "page_idx": page_idx})
+            continue
+
+        prev_pos = 0
+        for match in matches:
+            # 标题前的正文归属当前章
+            before = text[prev_pos:match.start()].strip()
+            if before and current_chapter is not None:
+                current_chapter["page_list"].append({"text": before, "page_idx": page_idx})
+
+            heading = match.group(1).strip()
+            # 过滤掉明显是目录条目的行（含页码后缀且整行较短）
+            if re.search(r"\d+\s*$", heading) and len(heading) < 50:
+                heading = re.sub(r"[\s.．·　\d]+$", "", heading).strip()
+
+            if current_chapter is not None:
+                chapters.append(current_chapter)
+            current_chapter = {
+                "heading": heading,
+                "page_idx": page_idx,
+                "page_list": [],
+                "sections_info": [],
+            }
+            prev_pos = match.end()
+
+        # 标题后的正文归属当前章
+        remaining = text[prev_pos:].strip()
+        if remaining and current_chapter is not None:
+            current_chapter["page_list"].append({"text": remaining, "page_idx": page_idx})
+
+    if current_chapter is not None:
+        chapters.append(current_chapter)
+
+    return chapters
 
 
 def parse_chapters(preprocessed: List[Dict],
@@ -539,8 +641,40 @@ def parse_chapters(preprocessed: List[Dict],
     toc = parse_toc(preprocessed)
 
     if not toc:
-        # 如果没有目录，尝试直接按标题切分
-        return {"chapters": []}
+        # Fallback 1：从正文标题行切分章节
+        print("[ChapterParser] TOC 解析失败，尝试正文标题 fallback...")
+        fallback_chapters = _fallback_chapter_split(preprocessed)
+        if fallback_chapters:
+            print(f"[ChapterParser] Fallback 识别到 {len(fallback_chapters)} 个章节")
+            result_chapters = []
+            for chapter in fallback_chapters:
+                sections = split_sections(chapter)
+                for section in sections:
+                    section = split_subsections(section, split_subsection_method)
+                result_chapters.append({
+                    "heading": chapter["heading"],
+                    "page_idx": chapter["page_idx"],
+                    "sections": sections,
+                })
+            return {"chapters": result_chapters}
+
+        # Fallback 2：全文作为单一虚拟章节，至少能送 LLM 抽取
+        print("[ChapterParser] 使用全文虚拟章节 fallback")
+        all_pages = [{"text": p["text"], "page_idx": p["page_idx"]} for p in preprocessed]
+        virtual_chapter = {
+            "heading": "全文",
+            "page_idx": preprocessed[0]["page_idx"] if preprocessed else 0,
+            "page_list": all_pages,
+            "sections_info": [],
+        }
+        sections = split_sections(virtual_chapter)
+        for section in sections:
+            section = split_subsections(section, split_subsection_method)
+        return {"chapters": [{
+            "heading": "全文",
+            "page_idx": virtual_chapter["page_idx"],
+            "sections": sections,
+        }]}
 
     # 2. 切分大章
     chapters = split_chapters(preprocessed, toc)

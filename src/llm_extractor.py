@@ -11,7 +11,12 @@ CHUNK_MAX_CHARS = 120000  # 适配 256K 上下文窗口
 
 
 def _merge_object_results(results: List[Dict]) -> Optional[Dict]:
-    """合并多个 chunk 返回的 dict 结果（取各字段第一个非空值，数组字段 extend+去重）"""
+    """合并多个 chunk 返回的 dict 结果
+
+    策略：
+    - 标量字段：后 chunk 的非空值覆盖前 chunk（文档越靠后越详细）
+    - 数组字段：累积 extend，再按 name/project_name 等去重
+    """
     if not results:
         return None
     valid = [r for r in results if isinstance(r, dict)]
@@ -23,12 +28,16 @@ def _merge_object_results(results: List[Dict]) -> Optional[Dict]:
     merged = {}
     for r in valid:
         for k, v in r.items():
-            if k not in merged:
-                merged[k] = v
-            elif isinstance(v, list) and isinstance(merged[k], list):
-                # 数组字段：extend + 按 name/project_name 等去重
+            if isinstance(v, list) and isinstance(merged.get(k), list):
+                # 数组字段：累积
                 merged[k].extend(v)
-            elif merged[k] in (None, "", {}, []) and v not in (None, "", {}, []):
+            elif isinstance(v, list):
+                merged[k] = v
+            elif v not in (None, "", {}, []):
+                # 标量字段：后 chunk 覆盖（靠后的文本通常包含更完整的信息）
+                merged[k] = v
+            elif k not in merged:
+                # 首次出现该键，即使值为空也先记录
                 merged[k] = v
 
     # 数组字段去重
@@ -38,8 +47,9 @@ def _merge_object_results(results: List[Dict]) -> Optional[Dict]:
             deduped = []
             for item in v:
                 if isinstance(item, dict):
-                    # 用 name/project_name/field_name 等作为去重键
-                    name_key = item.get("name") or item.get("project_name") or item.get("field_name") or json.dumps(item, ensure_ascii=False, sort_keys=True)
+                    name_key = (item.get("name") or item.get("project_name")
+                                or item.get("field_name")
+                                or json.dumps(item, ensure_ascii=False, sort_keys=True))
                     if name_key not in seen:
                         seen.add(name_key)
                         deduped.append(item)
@@ -64,7 +74,7 @@ FIELD_CHAPTER_MAPPING = {
         "is_object": True,
     },
     "financials": {
-        "keywords": ["财务会计信息", "财务报表", "管理层分析"],
+        "keywords": ["财务会计信息", "财务报表", "管理层分析", "募集资金运用"],
         "is_object": False,
     },
     "fund_raising_projects": {
@@ -244,6 +254,8 @@ class LLMExtractor:
         for idx, chunk in enumerate(chunks):
             print(f"[LLM]   -> 调用 {field_category} chunk {idx + 1}/{len(chunks)} | {len(chunk)} 字符")
             prompt = prompt_template.replace("{chapter_text}", chunk)
+            if field_category == "issuer_profile":
+                print(f"[LLM][issuer_profile] 输入prompt:\n{'-'*60}\n{prompt}\n{'-'*60}")
             try:
                 result = self.client.chat_json(prompt, system_prompt=config.SYSTEM_PROMPT)
             except Exception as e:
@@ -303,6 +315,8 @@ class LLMExtractor:
         async def extract_chunk(idx: int, chunk: str) -> Any:
             print(f"[LLM]   -> 调用 {field_category} chunk {idx + 1}/{len(chunks)} | {len(chunk)} 字符")
             prompt = prompt_template.replace("{chapter_text}", chunk)
+            # if field_category == "issuer_profile":
+            #     print(f"[LLM][issuer_profile] 输入prompt:\n{'-'*60}\n{prompt}\n{'-'*60}")
             try:
                 result = await self._get_async_client().chat_json_async(
                     prompt, system_prompt=config.SYSTEM_PROMPT, max_retries=3

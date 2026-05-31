@@ -96,6 +96,8 @@ def build_evidence_index(
     去重规则：如果两个证据对象引用了同一段原文（前 200 字符相同），
     则共享同一个 evidence_id，在 evidence_index 中只出现一次。
 
+    过滤规则：以 # 开头的 markdown 标题块不进入 evidence_index。
+
     Args:
         chapter_texts: extract_chapter_texts 的输出
         raw_blocks_by_page: page_idx -> [raw_block, ...]
@@ -117,6 +119,11 @@ def build_evidence_index(
             page_idx = evidence.get("page_idx", 0)
             quote_text = evidence.get("text", "")
             quote = (quote_text or "")[:300]
+
+            # 跳过标题块（以 # 开头的 markdown 标题行不属于正文）
+            if quote_text.strip().startswith('#'):
+                continue
+
             qkey = _quote_key(quote)
 
             # 去重：相同 quote 复用 evidence_id
@@ -288,3 +295,38 @@ def attach_evidence_ids(
                 item["source_evidence_id"] = ev_id
 
     return result
+
+
+def prune_evidence_index(result: Dict[str, Any]) -> None:
+    """移除 evidence_index 中未被任何字段引用的条目（原地修改）
+
+    在 attach_evidence_ids 之后调用，只保留 source_evidence_id 实际指向的条目。
+    """
+    referenced: set = set()
+
+    # issuer_profile（对象型）
+    ip = result.get("issuer_profile")
+    if isinstance(ip, dict) and ip.get("source_evidence_id"):
+        referenced.add(ip["source_evidence_id"])
+
+    # ownership_structure 子列表
+    ownership = result.get("ownership_structure") or {}
+    for sub_field in ("controlling_shareholder", "actual_controller", "top_shareholders"):
+        for item in (ownership.get(sub_field) or []):
+            if isinstance(item, dict) and item.get("source_evidence_id"):
+                referenced.add(item["source_evidence_id"])
+
+    # 列表型字段
+    for list_field in ("financials", "fund_raising_projects", "risk_items", "compliance_items"):
+        for item in (result.get(list_field) or []):
+            if isinstance(item, dict) and item.get("source_evidence_id"):
+                referenced.add(item["source_evidence_id"])
+
+    before = len(result.get("evidence_index") or [])
+    result["evidence_index"] = [
+        ev for ev in (result.get("evidence_index") or [])
+        if ev.get("evidence_id") in referenced
+    ]
+    after = len(result["evidence_index"])
+    if before != after:
+        print(f"[EvidenceBuilder] 移除未引用证据 {before - after} 条，保留 {after} 条")

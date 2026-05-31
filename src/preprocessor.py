@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# 需要过滤的 block 类型
-SKIP_TYPES = {"image", "header", "footer", "page_number", "aside_text", "page_footnote"}
+# 需要过滤的 block 类型（page_footnote 保留：脚注含口径说明等重要信息）
+SKIP_TYPES = {"image", "header", "footer", "page_number", "aside_text"}
 
 
 def find_content_list_file(input_dir: str) -> Optional[Path]:
@@ -72,7 +72,10 @@ def _merge_page_content(blocks: List[Dict]) -> str:
         if not text:
             continue
 
-        if block_type == "text":
+        if block_type == "page_footnote":
+            # 脚注单独标注，保留口径说明、条件注释等重要语义
+            text = f"[脚注] {text}"
+        elif block_type == "text":
             text_level = block.get("text_level")
             text = _convert_text_level_to_markdown(text, text_level)
 

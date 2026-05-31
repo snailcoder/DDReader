@@ -84,11 +84,14 @@ def process_issuer_profile(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     # 注册资本
     cap = raw.get("registered_capital")
     if isinstance(cap, dict):
-        result["registered_capital"] = {
-            "value": _to_float(cap.get("value")),
-            "unit": cap.get("unit") or "万元",
-            "currency": cap.get("currency") or "CNY",
-        }
+        value = _to_float(cap.get("value"))
+        unit = cap.get("unit") or "万元"
+        currency = cap.get("currency") or "CNY"
+        # 统一换算：亿元 → 万元（schema enum 不含"亿元"）
+        if unit == "亿元" and value is not None:
+            value = value * 10000
+            unit = "万元"
+        result["registered_capital"] = {"value": value, "unit": unit, "currency": currency}
     elif isinstance(cap, str):
         parsed = utils.parse_amount(cap)
         result["registered_capital"] = parsed or {"value": None, "unit": "万元", "currency": "CNY"}
@@ -271,11 +274,9 @@ def process_financials(raw: Any) -> List[Dict[str, Any]]:
         if u and u not in _VALID_UNITS:
             processed["unit"] = _UNIT_MAP.get(u, "万元")
 
-        # 比例值校正：unit="%" 但 value 在 (0,1) 区间时，自动 ×100
-        if processed["unit"] == "%" and processed["value"] is not None:
-            v = processed["value"]
-            if 0 < v < 1:
-                processed["value"] = round(v * 100, 2)
+        # 注意：不对 unit="%" 的数值做自动缩放。
+        # SYSTEM_PROMPT 已明确要求 LLM 输出百分比数值（如 63.5），
+        # 自动×100 会对小百分比（如 0.8%）产生错误放大。
 
         result.append(processed)
     return result
