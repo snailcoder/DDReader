@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DrDD 金融文档字段抽取</title>
+<title>DDReader 金融文档字段抽取</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;background:#f5f7fa;color:#1f2937;min-height:100vh}
@@ -25,7 +25,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
 .section-title{font-size:18px;font-weight:600;margin-bottom:16px;color:#1e3a5f;display:flex;align-items:center;gap:8px}
 .fields-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .field-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px}.field-card .label{font-size:12px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}.field-card .value{font-size:15px;color:#1f2937;font-weight:500;word-break:break-all}.field-card .value.null{color:#94a3b8;font-style:italic}.field-card .value.boolean{font-weight:600}
-table.data-table{width:100%;border-collapse:collapse;font-size:14px}table.data-table th{background:#f1f5f9;text-align:left;padding:10px 12px;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0}table.data-table td{padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#1f2937}.null{color:#94a3b8;font-style:italic}
+table.data-table{width:100%;border-collapse:collapse;font-size:14px}table.data-table th{background:#f1f5f9;text-align:left;padding:10px 12px;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0}table.data-table td{padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#1f2937;max-width:400px;word-break:break-word}.null{color:#94a3b8;font-style:italic}
 tr:hover td{background:#f8fafc}
 
 .item-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:10px}.item-card .item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}.item-card .item-title{font-size:15px;font-weight:600}.item-card .item-meta{font-size:13px;color:#64748b;display:flex;gap:16px;flex-wrap:wrap}.item-card .item-desc{font-size:14px;color:#1f2937;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0}
@@ -40,7 +40,7 @@ tr:hover td{background:#f8fafc}
 <body>
 
 <div class="header">
-  <h1>DrDD 金融文档字段抽取</h1>
+  <h1>DDReader 金融文档字段抽取</h1>
   <p>上传 PDF 或 mineru 解析后的 content_list.json，自动提取结构化字段</p>
 </div>
 
@@ -281,7 +281,7 @@ tr:hover td{background:#f8fafc}
       case 'risk_items': renderRiskItems(container, result.risk_items); break;
       case 'compliance_items': renderComplianceItems(container, result.compliance_items); break;
       case 'evidence_index': renderTableList(container, result.evidence_index, [
-        {key:'evidence_id',label:'证据ID'},{key:'page_no',label:'页码'},{key:'chapter',label:'章节'},{key:'block_type',label:'类型'},{key:'quote',label:'引用',render:v=>v?v.slice(0,80)+(v.length>80?'...':''):null}
+        {key:'evidence_id',label:'证据ID',noWrap:true},{key:'page_no',label:'页码',noWrap:true},{key:'chapter',label:'章节',noWrap:true},{key:'block_type',label:'类型',noWrap:true},{key:'quote',label:'引用',render:v=>v?v.slice(0,80)+(v.length>80?'...':''):null}
       ]); break;
     }
   }
@@ -355,14 +355,17 @@ tr:hover td{background:#f8fafc}
   function renderTableList(container, items, columns) {
     if (!items || items.length === 0) { container.innerHTML = '<div class="null">无数据</div>'; return; }
     let html = '<table class="data-table"><thead><tr>';
-    columns.forEach(c => html += '<th>'+c.label+'</th>');
+    columns.forEach(c => html += '<th'+(c.noWrap?' style="white-space:nowrap"':'')+'>'+c.label+'</th>');
     html += '</tr></thead><tbody>';
     items.forEach(item => {
       html += '<tr>';
       columns.forEach(c => {
         let val = item[c.key];
         if (c.render) val = c.render(val);
-        html += '<td class="'+(val===null||val===undefined?'null':'')+'">'+(val||'—')+'</td>';
+        const isNull = val===null||val===undefined;
+        const display = isNull ? '—' : escapeHtml(String(val));
+        const style = c.noWrap ? ' style="white-space:nowrap"' : '';
+        html += '<td class="'+(isNull?'null':'')+'"'+style+'>'+display+'</td>';
       });
       html += '</tr>';
     });

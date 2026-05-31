@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# 需要过滤的 block 类型
-SKIP_TYPES = {"image", "header", "footer", "page_number", "aside_text", "page_footnote"}
+# 需要过滤的 block 类型（page_footnote 保留：脚注含口径说明等重要信息）
+SKIP_TYPES = {"image", "header", "footer", "page_number", "aside_text"}
 
 
 def find_content_list_file(input_dir: str) -> Optional[Path]:
@@ -37,8 +37,12 @@ def load_raw_blocks_map(input_dir: str) -> Dict[int, List[Dict]]:
     保留各 block 的原始字段（text, bbox, type, page_idx 等）
     """
     content_list = load_content_list(input_dir)
+    if isinstance(content_list, dict):
+        content_list = list(content_list.values())
     pages: Dict[int, List[Dict]] = {}
     for block in content_list:
+        if not isinstance(block, dict):
+            continue
         block_type = block.get("type", "text")
         if block_type in SKIP_TYPES:
             continue
@@ -72,7 +76,10 @@ def _merge_page_content(blocks: List[Dict]) -> str:
         if not text:
             continue
 
-        if block_type == "text":
+        if block_type == "page_footnote":
+            # 脚注单独标注，保留口径说明、条件注释等重要语义
+            text = f"[脚注] {text}"
+        elif block_type == "text":
             text_level = block.get("text_level")
             text = _convert_text_level_to_markdown(text, text_level)
 
@@ -94,8 +101,12 @@ def preprocess(input_dir: str) -> List[Dict]:
     """
     content_list = load_content_list(input_dir)
 
+    if isinstance(content_list, dict):
+        content_list = list(content_list.values())
     pages: Dict[int, List[Dict]] = {}
     for block in content_list:
+        if not isinstance(block, dict):
+            continue
         block_type = block.get("type", "text")
         if block_type in SKIP_TYPES:
             continue

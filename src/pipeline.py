@@ -14,6 +14,7 @@ import asyncio
 import copy
 import json
 import os
+import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
@@ -21,7 +22,7 @@ from . import config, utils
 from .chapter_mapper import ChapterMapper
 from .chapter_parser import parse_chapters, get_section_text
 from .document_classifier import classify_document_from_preprocessed, should_skip
-from .evidence_builder import build_evidence_index, attach_evidence_ids
+from .evidence_builder import build_evidence_index, attach_evidence_ids, prune_evidence_index
 from .llm_extractor import LLMExtractor
 from .post_processor import (
     process_compliance_items,
@@ -51,6 +52,7 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
     Returns:
         符合 schema 的结构化结果字典
     """
+    _t0 = time.time()
     print(f"[Pipeline] 开始处理: {input_dir}")
 
     # 1. 预处理
@@ -163,6 +165,7 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
 
     # 9. 关联证据 ID
     attach_evidence_ids(result, evidence_index, chapter_to_ev_ids)
+    prune_evidence_index(result)
 
     # 10. 基础校验
     print("[Pipeline] 运行基础校验...")
@@ -181,8 +184,10 @@ def run_pipeline(input_dir: str, output_dir: Optional[str] = None,
     # 12. 保存结果
     if output_dir:
         _save_result(result, output_dir, doc_id)
+        _save_result({"chapters": chapters}, output_dir, doc_id + "_chapters")
 
-    print("[Pipeline] 处理完成")
+    elapsed = time.time() - _t0
+    print(f"[Pipeline] 处理完成，耗时 {elapsed:.1f}s")
     return result
 
 
@@ -201,6 +206,7 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
                              split_subsection_method: str = "regex") -> Dict[str, Any]:
     """端到端 Pipeline 主入口（异步并发版本）"""
 
+    _t0 = time.time()
     print(f"[Pipeline] 开始处理: {input_dir}")
 
     # 1. 预处理
@@ -313,6 +319,7 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
 
     # 9. 关联证据 ID
     attach_evidence_ids(result, evidence_index, chapter_to_ev_ids)
+    prune_evidence_index(result)
 
     # 10. 基础校验
     print("[Pipeline] 运行基础校验...")
@@ -331,6 +338,10 @@ async def run_pipeline_async(input_dir: str, output_dir: Optional[str] = None,
     # 12. 保存结果
     if output_dir:
         _save_result(result, output_dir, doc_id)
+        _save_result({"chapters": chapters}, output_dir, doc_id + "_chapters")
+        # _save_result({"preprocessed": preprocessed}, output_dir, doc_id + "_preprocessed")
+        # _save_result({"parsed": parsed}, output_dir, doc_id + "_parsed")
 
-    print("[Pipeline] 处理完成")
+    elapsed = time.time() - _t0
+    print(f"[Pipeline] 处理完成，耗时 {elapsed:.1f}s")
     return result
