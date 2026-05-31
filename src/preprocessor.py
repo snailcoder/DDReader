@@ -37,8 +37,12 @@ def load_raw_blocks_map(input_dir: str) -> Dict[int, List[Dict]]:
     保留各 block 的原始字段（text, bbox, type, page_idx 等）
     """
     content_list = load_content_list(input_dir)
+    if isinstance(content_list, dict):
+        content_list = list(content_list.values())
     pages: Dict[int, List[Dict]] = {}
     for block in content_list:
+        if not isinstance(block, dict):
+            continue
         block_type = block.get("type", "text")
         if block_type in SKIP_TYPES:
             continue
@@ -97,8 +101,12 @@ def preprocess(input_dir: str) -> List[Dict]:
     """
     content_list = load_content_list(input_dir)
 
+    if isinstance(content_list, dict):
+        content_list = list(content_list.values())
     pages: Dict[int, List[Dict]] = {}
     for block in content_list:
+        if not isinstance(block, dict):
+            continue
         block_type = block.get("type", "text")
         if block_type in SKIP_TYPES:
             continue

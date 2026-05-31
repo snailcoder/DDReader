@@ -207,7 +207,8 @@ def _find_best_evidence_for_item(
     elif field_name == "risk_items":
         search_text = item.get("risk_title") or item.get("risk_description") or ""
     elif field_name == "compliance_items":
-        search_text = item.get("item_type") or item.get("description") or item.get("counter_party") or ""
+        # 优先用 description（包含具体案情/当事人等，辨识度最高）
+        search_text = (item.get("description") or item.get("counter_party") or item.get("item_type") or "")[:300]
 
     if search_text:
         # 找最相关的 evidence
@@ -249,7 +250,7 @@ def attach_evidence_ids(
         "financials": ["财务会计信息", "管理层分析"],
         "fund_raising_projects": ["募集资金运用", "未来发展规划"],
         "risk_items": ["风险因素", "重大事项提示"],
-        "compliance_items": ["其他重要事项", "公司治理与独立性"],
+        "compliance_items": ["其他重要事项"],
     }
 
     def _get_ev_ids_for_field(field_name: str) -> List[str]:

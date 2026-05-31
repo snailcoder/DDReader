@@ -12,6 +12,7 @@ import logging
 import os
 import shutil
 import tempfile
+import traceback
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -275,6 +276,8 @@ async def _run_extraction(task_id: str):
                     return
 
                 content_list = file_result["content_list"]
+                if isinstance(content_list, str):
+                    content_list = json.loads(content_list)
                 cl_path = mineru_output_dir / f"{file_name}_content_list.json"
                 with open(cl_path, "w", encoding="utf-8") as f:
                     json.dump(content_list, f, ensure_ascii=False, indent=2)
@@ -300,12 +303,14 @@ async def _run_extraction(task_id: str):
         task["status"] = "done"
         task["result"] = result
     except Exception as e:
+        tb = traceback.format_exc()
+        LOG.error("[Pipeline] 字段抽取失败:\n%s", tb)
         error_msg = f"字段抽取失败: {e}"
         task["status"] = "failed"
         task["error"] = error_msg
     finally:
         _persist_task(task_id, result, error_msg)
-        shutil.rmtree(task_dir, ignore_errors=True)
+        # shutil.rmtree(task_dir, ignore_errors=True)
 
 
 def _persist_task(task_id: str, result: Optional[dict], error: Optional[str]) -> None:
